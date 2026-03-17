@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TravelOps Platform — Workflow Automation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--p:#1F3864;--pl:#2E75B6;--acc:#D6E4F0;--bg:#F5F7FA;--w:#fff;--t:#1a1a2e;--tl:#666;--red:#dc3545;--warn:#f59e0b;--grn:#10b981;--brd:#dee2e6;--sh:0 2px 8px rgba(0,0,0,.08);--r:8px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t)}
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--p),var(--pl));color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hdr h1{font-size:17px;font-weight:700}.hdr .sub{font-size:11px;opacity:.8}
+.hdr-right{display:flex;align-items:center;gap:16px}
+.hdr .user-badge{background:rgba(255,255,255,.15);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.hdr .notif-bell{position:relative;cursor:pointer;font-size:20px}
+.hdr .notif-count{position:absolute;top:-6px;right:-8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+/* LOGIN */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a,#1e3a5f)}
+.login-box{background:var(--w);border-radius:16px;padding:40px;width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h2{font-size:22px;color:var(--p);margin-bottom:6px}
+.login-box .sub{color:var(--tl);font-size:13px;margin-bottom:24px}
+/* NAV */
+.nav{background:var(--w);border-bottom:1px solid var(--brd);display:flex;overflow-x:auto;padding:0 12px;box-shadow:var(--sh);position:sticky;top:52px;z-index:199}
+.nav button{padding:10px 16px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--tl);white-space:nowrap;border-bottom:3px solid transparent;transition:.2s}
+.nav button:hover{color:var(--p);background:#f0f4ff}
+.nav button.act{color:var(--p);border-bottom-color:var(--pl);background:#f0f4ff}
+/* MAIN */
+.main{padding:16px;max-width:1500px;margin:0 auto}
+.card{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:16px}
+.card-t{font-size:15px;font-weight:700;color:var(--p);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.sc{background:var(--w);border-radius:var(--r);padding:14px;box-shadow:var(--sh);border-left:4px solid var(--pl)}
+.sc.d{border-left-color:var(--red)}.sc.w{border-left-color:var(--warn)}.sc.s{border-left-color:var(--grn)}
+.sc .lb{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--tl);font-weight:600}
+.sc .vl{font-size:22px;font-weight:700;color:var(--p);margin-top:2px}
+.sc.d .vl{color:var(--red)}.sc.w .vl{color:var(--warn)}.sc.s .vl{color:var(--grn)}
+/* FORMS */
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.fi{display:flex;flex-direction:column;gap:3px}
+.fi label{font-size:11px;font-weight:600;color:var(--tl);text-transform:uppercase;letter-spacing:.5px}
+.fi input,.fi select,.fi textarea{padding:7px 10px;border:1px solid var(--brd);border-radius:6px;font-size:13px;transition:.2s}
+.fi input:focus,.fi select:focus{outline:none;border-color:var(--pl);box-shadow:0 0 0 3px rgba(46,117,182,.12)}
+/* BUTTONS */
+.btn{padding:7px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:5px}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--pl)}
+.btn-s{background:var(--grn);color:#fff}.btn-s:hover{background:#059669}
+.btn-d{background:var(--red);color:#fff}
+.btn-w{background:var(--warn);color:#fff}
+.btn-o{background:none;border:1px solid var(--brd);color:var(--t)}.btn-o:hover{background:#f8f9fa}
+.btn-sm{padding:4px 10px;font-size:11px}
+.bg{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--p);color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f0f0f0}
+tr:hover{background:#f8faff}
+.tw{overflow-x:auto;max-height:440px;overflow-y:auto;border-radius:var(--r);border:1px solid var(--brd)}
+/* BADGES */
+.b{padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase;display:inline-block}
+.b-ok{background:#d1fae5;color:#065f46}.b-inv{background:#fee2e2;color:#991b1b}
+.b-wrn{background:#fef3c7;color:#92400e}.b-info{background:#dbeafe;color:#1e40af}
+.b-pers{background:#dc3545;color:#fff;animation:pls 2s infinite}
+.b-new{background:#ede9fe;color:#5b21b6}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.7}}
+.hl{background:#fff5f5!important}
+/* MODAL */
+.mo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+.mc{background:var(--w);border-radius:12px;padding:20px;max-width:850px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.mc-t{font-size:16px;font-weight:700;color:var(--p);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.mc-x{background:none;border:none;font-size:22px;cursor:pointer;color:var(--tl);padding:2px 6px}
+/* ALERT */
+.al{padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:12px;display:flex;align-items:center;gap:6px}
+.al-d{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.al-w{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.al-i{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
+.al-s{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+/* PIPELINE */
+.pipeline{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.pipe-stage{flex:1;min-width:120px;text-align:center;padding:10px 8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:.2s;border:2px solid transparent}
+.pipe-stage:hover{transform:translateY(-2px)}
+.pipe-stage .count{font-size:20px;display:block;margin-bottom:2px}
+/* NOTIF PANEL */
+.np{position:fixed;top:52px;right:0;width:360px;max-height:calc(100vh - 52px);background:var(--w);box-shadow:-4px 0 20px rgba(0,0,0,.15);z-index:250;overflow-y:auto;border-left:1px solid var(--brd)}
+.np-t{padding:12px 16px;font-weight:700;color:var(--p);border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+.np-item{padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:.2s}
+.np-item:hover{background:#f8faff}
+.np-item.unread{background:#f0f4ff;border-left:3px solid var(--pl)}
+.np-item .np-title{font-size:13px;font-weight:600;color:var(--t)}
+.np-item .np-msg{font-size:11px;color:var(--tl);margin-top:2px}
+.np-item .np-time{font-size:10px;color:#aaa;margin-top:4px}
+/* TIMELINE */
+.tl{position:relative;padding-left:24px;margin:12px 0}
+.tl::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--brd)}
+.tl-item{position:relative;padding:8px 0 16px}
+.tl-item::before{content:'';position:absolute;left:-20px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--pl);border:2px solid var(--w)}
+.tl-item.done::before{background:var(--grn)}
+.tl-item .tl-title{font-size:13px;font-weight:600}
+.tl-item .tl-desc{font-size:11px;color:var(--tl);margin-top:2px}
+.tl-item .tl-time{font-size:10px;color:#aaa;margin-top:2px}
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{padding:5px 12px;border:1px solid var(--brd);border-radius:16px;background:var(--w);font-size:11px;font-weight:600;cursor:pointer;transition:.2s}
+.tabs button.act{background:var(--p);color:#fff;border-color:var(--p)}
+/* SEARCH */
+.sb{padding:7px 10px;border:1px solid var(--brd);border-radius:6px;font-size:13px;width:220px}
+.fr{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+/* MISC */
+.empty{text-align:center;padding:30px;color:var(--tl);font-size:13px}
+input[type=number]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+.doc-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f0f4ff;border:1px solid #c7d2fe;border-radius:6px;font-size:11px;font-weight:600;color:var(--p);margin:2px}
+@media(max-width:768px){.fg{grid-template-columns:1fr}.sg{grid-template-columns:repeat(2,1fr)}.nav button{padding:8px 10px;font-size:11px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const{useState,useEffect,useMemo,useCallback,useRef}=React;
+const PORTALS=["IndiGo (6E)","Akasa Air","Air India Express","MakeMyTrip","BooknTravel","Galileo/Travelport","Amadeus","SpiceJet","Vistara/Air India","GoFirst","TBO","Riya Travel"];
+const STAFF_DB=[
+{id:"U001",name:"Rajesh Kumar",email:"rajesh@company.com",role:"admin",dept:"Management"},
+{id:"U002",name:"Priya Sharma",email:"priya@company.com",role:"sales",dept:"Sales"},
+{id:"U003",name:"Amit Patel",email:"amit@company.com",role:"sales",dept:"Sales"},
+{id:"U004",name:"Sunita Verma",email:"sunita@company.com",role:"accounts",dept:"Accounts"},
+{id:"U005",name:"Deepak Gupta",email:"deepak@company.com",role:"accounts",dept:"Accounts"},
+{id:"U006",name:"Vikram Singh",email:"vikram@company.com",role:"ticketing",dept:"Ticketing"},
+{id:"U007",name:"Meera Nair",email:"meera@company.com",role:"ticketing",dept:"Ticketing"},
+{id:"U008",name:"Rahul Joshi",email:"rahul@company.com",role:"operations",dept:"Operations"},
+{id:"U009",name:"Anita Desai",email:"anita@company.com",role:"operations",dept:"Operations"},
+];
+const ROLES={admin:"Admin",sales:"Sales",accounts:"Accounts",ticketing:"Ticketing",operations:"Operations"};
+const today=()=>new Date().toISOString().split('T')[0];
+const now=()=>new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+const fmt=n=>n!=null&&!isNaN(n)?'\u20b9'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0}):'\u20b90';
+const gid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const genNum=(prefix,arr)=>prefix+'-'+(new Date().getFullYear())+'-'+String(arr.length+1).padStart(5,'0');
+
+function App(){
+const[user,setUser]=useState(null);
+const[tab,setTab]=useState('dashboard');
+const[leads,setLeads]=useState([]);
+const[bookings,setBookings]=useState([]);
+const[payments,setPayments]=useState([]);
+const[flights,setFlights]=useState([]);
+const[services,setServices]=useState([]);
+const[invoices,setInvoices]=useState([]);
+const[documents,setDocuments]=useState([]);
+const[notifications,setNotifs]=useState([]);
+const[auditLog,setAudit]=useState([]);
+const[modal,setModal]=useState(null);
+const[showNotifs,setShowNotifs]=useState(false);
+
+const addNotif=(userId,bookingId,type,title,msg)=>{
+const n={id:gid(),userId,bookingId,type,title,message:msg,channel:'in_app',isRead:false,time:new Date().toLocaleString('en-IN')};
+setNotifs(p=>[n,...p]);
+};
+const addAudit=(action,entityType,entityId,details)=>{
+setAudit(p=>[{id:gid(),userId:user?.id,userName:user?.name,action,entityType,entityId,details,time:new Date().toLocaleString('en-IN')},...p]);
+};
+
+// ═══ TRIGGER ENGINE ═══
+const fireT1=(booking,payment)=>{
+STAFF_DB.filter(s=>s.role==='accounts').forEach(s=>{
+addNotif(s.id,booking.id,'payment_received','Payment Received',
+'New payment of '+fmt(payment.amount)+' for '+booking.bookingNumber+' from '+booking.clientName+'. Please verify.');
+});
+addNotif(booking.salesAgentId,booking.id,'info','Booking Created',booking.bookingNumber+' created. Awaiting payment verification.');
+addAudit('trigger_t1','booking',booking.id,'Lead converted, payment recorded. Accounts notified.');
+};
+
+const fireT2=(booking,payment)=>{
+// Auto-generate invoice
+const inv={id:gid(),bookingId:booking.id,bookingNumber:booking.bookingNumber,
+invoiceNumber:genNum('INV',invoices),type:payment.amount>=booking.totalValue?'final':'advance_receipt',
+totalAmount:booking.totalValue,amountPaid:payment.amount,
+balanceDue:booking.totalValue-payment.amount,clientName:booking.clientName,
+clientPhone:booking.clientPhone,clientEmail:booking.clientEmail,
+gst:Math.round(booking.totalValue*0.05),sentEmail:true,sentWhatsapp:true,
+createdAt:new Date().toLocaleString('en-IN')};
+setInvoices(p=>[...p,inv]);
+
+// Notify client (simulated)
+addNotif(booking.salesAgentId,booking.id,'invoice_generated','Invoice Sent',
+inv.invoiceNumber+' sent to '+booking.clientName+' via WhatsApp & Email. Amount: '+fmt(inv.totalAmount));
+
+// Check if docs ready -> fire T3
+const bookingDocs=documents.filter(d=>d.bookingId===booking.id);
+if(bookingDocs.length>0){
+fireT3(booking);
+}else{
+STAFF_DB.filter(s=>s.role==='sales').forEach(s=>{
+addNotif(s.id,booking.id,'alert','Documents Needed','Upload client documents for '+booking.bookingNumber+' to proceed with ticketing.');
+});
+}
+addAudit('trigger_t2','payment',payment.id,'Payment verified. Invoice '+inv.invoiceNumber+' generated and sent.');
+};
+
+const fireT3=(booking)=>{
+const fl={id:gid(),bookingId:booking.id,bookingNumber:booking.bookingNumber,
+clientName:booking.clientName,portalUsed:'',pnr:'',airline:'',flightNumber:'',
+sector:booking.destination,departureDate:booking.travelFrom,
+ticketClass:'economy',baseFare:0,taxes:0,totalFare:0,
+ticketStatus:'requested',bookedBy:'',createdAt:new Date().toLocaleString('en-IN')};
+setFlights(p=>[...p,fl]);
+setBookings(p=>p.map(b=>b.id===booking.id?{...b,bookingStatus:'ticketing_in_progress'}:b));
+STAFF_DB.filter(s=>s.role==='ticketing').forEach(s=>{
+addNotif(s.id,booking.id,'booking_request','New Booking Request',
+booking.bookingNumber+' — '+booking.clientName+' to '+booking.destination+'. Docs ready. Please book flights.');
+});
+addAudit('trigger_t3','booking',booking.id,'Booking request sent to Ticketing team.');
+};
+
+const fireT4=(flight,booking)=>{
+addNotif(booking.salesAgentId,booking.id,'ticket_ready','Ticket Ready!',
+'E-ticket for '+booking.bookingNumber+' is ready. PNR: '+flight.pnr+'. Download now!');
+// Client WhatsApp (simulated)
+addNotif(booking.salesAgentId,booking.id,'info','WhatsApp Sent to Client',
+'Flight confirmation sent to '+booking.clientName+' via WhatsApp. PNR: '+flight.pnr);
+if(booking.travelType==='full_package'){fireT5(booking);}
+addAudit('trigger_t4','flight',flight.id,'Ticket issued. PNR: '+flight.pnr+'. Sales notified.');
+};
+
+const fireT5=(booking)=>{
+const svc={id:gid(),bookingId:booking.id,bookingNumber:booking.bookingNumber,
+clientName:booking.clientName,serviceType:'hotel',vendorName:'',description:'',
+checkIn:booking.travelFrom,checkOut:booking.travelTo,cost:0,sellingPrice:0,
+confirmationNumber:'',status:'pending',handledBy:'',createdAt:new Date().toLocaleString('en-IN')};
+setServices(p=>[...p,svc]);
+setBookings(p=>p.map(b=>b.id===booking.id?{...b,bookingStatus:'operations_active'}:b));
+STAFF_DB.filter(s=>s.role==='operations').forEach(s=>{
+addNotif(s.id,booking.id,'ops_trigger','Operations Required',
+booking.bookingNumber+' — Book hotels & transport for '+booking.clientName+'. Travel: '+booking.travelFrom+' to '+booking.travelTo);
+});
+addAudit('trigger_t5','booking',booking.id,'Operations team activated for full package.');
+};
+
+const fireT6=(service,booking)=>{
+addNotif(booking.salesAgentId,booking.id,'info','Service Confirmed',
+service.serviceType.charAt(0).toUpperCase()+service.serviceType.slice(1)+' confirmed for '+booking.bookingNumber+': '+service.vendorName);
+const allDone=services.filter(s=>s.bookingId===booking.id).every(s=>s.status==='confirmed');
+if(allDone){
+setBookings(p=>p.map(b=>b.id===booking.id?{...b,bookingStatus:'completed'}:b));
+addNotif(booking.salesAgentId,booking.id,'info','Booking Complete!',booking.bookingNumber+' — All services confirmed. Itinerary ready!');
+}
+addAudit('trigger_t6','service',service.id,'Service confirmed: '+service.vendorName);
+};
+
+const unreadCount=notifications.filter(n=>!n.isRead&&(!user||n.userId===user?.id||user?.role==='admin')).length;
+
+const navTabs=useMemo(()=>{
+if(!user)return[];
+const all=[{id:'dashboard',label:'Dashboard',icon:'\ud83d\udcca',roles:['admin','sales','accounts','ticketing','operations']},
+{id:'leads',label:'Lead Management',icon:'\ud83d\udccb',roles:['admin','sales']},
+{id:'bookings',label:'Bookings',icon:'\ud83d\udce6',roles:['admin','sales','accounts','ticketing','operations']},
+{id:'payments',label:'Payments',icon:'\ud83d\udcb3',roles:['admin','sales','accounts']},
+{id:'ticketing',label:'Ticketing Queue',icon:'\u2708\ufe0f',roles:['admin','ticketing']},
+{id:'operations',label:'Operations',icon:'\ud83c\udfe8',roles:['admin','operations']},
+{id:'invoices',label:'Invoices',icon:'\ud83e\uddfe',roles:['admin','accounts','sales']},
+{id:'documents',label:'Documents',icon:'\ud83d\udcc4',roles:['admin','sales','ticketing']},
+{id:'audit',label:'Audit Log',icon:'\ud83d\udcdd',roles:['admin']}];
+return all.filter(t=>t.roles.includes(user.role));
+},[user]);
+
+if(!user) return <LoginPage onLogin={setUser}/>;
+
+return(<div>
+<header className="hdr">
+<div><h1>\u2708\ufe0f TravelOps Platform</h1><div className="sub">Workflow Automation Bridge</div></div>
+<div className="hdr-right">
+<div className="user-badge">{ROLES[user.role]}: {user.name}</div>
+<div className="notif-bell" onClick={()=>setShowNotifs(!showNotifs)}>
+\ud83d\udd14{unreadCount>0&&<span className="notif-count">{unreadCount}</span>}
+</div>
+<button className="btn btn-o btn-sm" onClick={()=>{setUser(null);setTab('dashboard');}}>Logout</button>
+</div>
+</header>
+<nav className="nav">
+{navTabs.map(t=><button key={t.id} className={tab===t.id?'act':''} onClick={()=>setTab(t.id)}>{t.icon} {t.label}</button>)}
+</nav>
+<main className="main">
+{tab==='dashboard'&&<Dashboard user={user} leads={leads} bookings={bookings} payments={payments} flights={flights} services={services} notifications={notifications} invoices={invoices}/>}
+{tab==='leads'&&<LeadMgmt user={user} leads={leads} setLeads={setLeads} bookings={bookings} setBookings={setBookings} payments={payments} setPayments={setPayments} setModal={setModal} addAudit={addAudit} fireT1={fireT1} documents={documents}/>}
+{tab==='bookings'&&<BookingView user={user} bookings={bookings} payments={payments} flights={flights} services={services} documents={documents} invoices={invoices}/>}
+{tab==='payments'&&<PaymentMgmt user={user} payments={payments} setPayments={setPayments} bookings={bookings} setBookings={setBookings} addAudit={addAudit} fireT2={fireT2} documents={documents} fireT3={fireT3}/>}
+{tab==='ticketing'&&<TicketingModule user={user} flights={flights} setFlights={setFlights} bookings={bookings} setBookings={setBookings} documents={documents} addAudit={addAudit} fireT4={fireT4}/>}
+{tab==='operations'&&<OpsModule user={user} services={services} setServices={setServices} bookings={bookings} setBookings={setBookings} addAudit={addAudit} fireT6={fireT6}/>}
+{tab==='invoices'&&<InvoiceView invoices={invoices}/>}
+{tab==='documents'&&<DocMgmt user={user} documents={documents} setDocuments={setDocuments} bookings={bookings} addAudit={addAudit} fireT3={fireT3}/>}
+{tab==='audit'&&<AuditView auditLog={auditLog}/>}
+</main>
+{showNotifs&&<NotifPanel notifications={notifications} setNotifs={setNotifs} user={user} onClose={()=>setShowNotifs(false)}/>}
+</div>);
+}
+
+function LoginPage({onLogin}){
+const[sel,setSel]=useState('');
+return(<div className="login-page"><div className="login-box">
+<div style={{textAlign:'center',marginBottom:20}}><span style={{fontSize:48}}>\u2708\ufe0f</span></div>
+<h2>TravelOps Platform</h2>
+<p className="sub">Select your role to enter the system</p>
+<div className="fi" style={{marginBottom:16}}>
+<label>Login As</label>
+<select value={sel} onChange={e=>setSel(e.target.value)} style={{padding:'10px 12px',fontSize:14}}>
+<option value="">-- Select Staff Member --</option>
+{STAFF_DB.map(s=><option key={s.id} value={s.id}>{s.name} ({s.dept} — {ROLES[s.role]})</option>)}
+</select>
+</div>
+<button className="btn btn-p" style={{width:'100%',padding:'12px',fontSize:14}} onClick={()=>{if(sel){onLogin(STAFF_DB.find(s=>s.id===sel))}}}>Login to Platform</button>
+<div style={{marginTop:20,padding:12,background:'#f0f4ff',borderRadius:8,fontSize:11,color:'var(--p)'}}>
+<strong>Demo Roles:</strong><br/>
+Admin (full access) | Sales (leads, payments) | Accounts (verify, invoices) | Ticketing (flights) | Operations (hotels, transport)
+</div>
+</div></div>);
+}
+
+function Dashboard({user,leads,bookings,payments,flights,services,notifications,invoices}){
+const totalRevenue=payments.filter(p=>p.status==='verified').reduce((s,p)=>s+(Number(p.amount)||0),0);
+const pendingPayments=payments.filter(p=>p.status==='pending').length;
+const activeBookings=bookings.filter(b=>!['completed','cancelled'].includes(b.bookingStatus)).length;
+const ticketingQueue=flights.filter(f=>f.ticketStatus==='requested').length;
+const opsQueue=services.filter(s=>s.status==='pending').length;
+const openLeads=leads.filter(l=>!['converted','lost'].includes(l.status)).length;
+const recentNotifs=notifications.filter(n=>!user||n.userId===user.id||user.role==='admin').slice(0,5);
+const recentBookings=bookings.slice(-5).reverse();
+
+return(<div>
+<div className="sg">
+<div className="sc"><div className="lb">Open Leads</div><div className="vl">{openLeads}</div></div>
+<div className="sc"><div className="lb">Active Bookings</div><div className="vl">{activeBookings}</div></div>
+<div className="sc s"><div className="lb">Verified Revenue</div><div className="vl">{fmt(totalRevenue)}</div></div>
+<div className="sc w"><div className="lb">Pending Payments</div><div className="vl">{pendingPayments}</div></div>
+<div className="sc" style={{borderLeftColor:'#8b5cf6'}}><div className="lb">Ticketing Queue</div><div className="vl" style={{color:'#8b5cf6'}}>{ticketingQueue}</div></div>
+<div className="sc w"><div className="lb">Operations Queue</div><div className="vl">{opsQueue}</div></div>
+<div className="sc"><div className="lb">Invoices Generated</div><div className="vl">{invoices.length}</div></div>
+<div className="sc"><div className="lb">Total Bookings</div><div className="vl">{bookings.length}</div></div>
+</div>
+<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+<div className="card">
+<div className="card-t">\ud83d\udce6 Recent Bookings</div>
+{recentBookings.length===0?<div className="empty">No bookings yet</div>:
+<div className="tw"><table><thead><tr><th>Booking #</th><th>Client</th><th>Destination</th><th>Value</th><th>Status</th></tr></thead><tbody>
+{recentBookings.map(b=><tr key={b.id}><td style={{fontFamily:'monospace',fontWeight:600}}>{b.bookingNumber}</td><td>{b.clientName}</td><td>{b.destination}</td><td style={{fontWeight:600}}>{fmt(b.totalValue)}</td><td><StatusBadge status={b.bookingStatus}/></td></tr>)}
+</tbody></table></div>}
+</div>
+<div className="card">
+<div className="card-t">\ud83d\udd14 Recent Notifications</div>
+{recentNotifs.length===0?<div className="empty">No notifications</div>:
+<div>{recentNotifs.map(n=><div key={n.id} style={{padding:'8px 0',borderBottom:'1px solid #f0f0f0'}}>
+<div style={{fontSize:13,fontWeight:600}}>{n.title}</div>
+<div style={{fontSize:11,color:'var(--tl)'}}>{n.message}</div>
+<div style={{fontSize:10,color:'#aaa'}}>{n.time}</div>
+</div>)}</div>}
+</div>
+</div>
+{/* Pipeline Status */}
+<div className="card" style={{marginTop:12}}>
+<div className="card-t">\ud83d\udcc8 Booking Pipeline</div>
+<div className="pipeline">
+{['created','payment_pending','confirmed','ticketing_in_progress','ticketed','operations_active','completed'].map(s=>{
+const count=bookings.filter(b=>b.bookingStatus===s).length;
+const colors={created:'#ede9fe',payment_pending:'#fef3c7',confirmed:'#dbeafe',ticketing_in_progress:'#e0e7ff',ticketed:'#d1fae5',operations_active:'#fef3c7',completed:'#d1fae5'};
+return(<div key={s} className="pipe-stage" style={{background:colors[s]||'#f0f0f0',borderColor:count>0?'var(--pl)':'transparent'}}>
+<span className="count">{count}</span>{s.replace(/_/g,' ')}
+</div>);
+})}
+</div>
+</div>
+</div>);
+}
+
+function StatusBadge({status}){
+const map={new:'b-new',contacted:'b-info',quoted:'b-wrn',negotiating:'b-wrn',converted:'b-ok',lost:'b-inv',
+created:'b-new',payment_pending:'b-wrn',confirmed:'b-info',ticketing_in_progress:'b-info',ticketed:'b-ok',operations_active:'b-wrn',completed:'b-ok',cancelled:'b-inv',
+pending:'b-wrn',verified:'b-ok',rejected:'b-inv',
+requested:'b-wrn',booked:'b-info',advance_paid:'b-wrn',fully_paid:'b-ok'};
+return <span className={'b '+(map[status]||'b-info')}>{(status||'').replace(/_/g,' ')}</span>;
+}
+
+// ═══ LEAD MANAGEMENT ═══
+function LeadMgmt({user,leads,setLeads,bookings,setBookings,payments,setPayments,setModal,addAudit,fireT1,documents}){
+const[showForm,setShowForm]=useState(false);
+const[showConvert,setShowConvert]=useState(null);
+const[filter,setFilter]=useState('all');
+const[search,setSearch]=useState('');
+
+const filtered=leads.filter(l=>{
+if(filter!=='all'&&l.status!==filter)return false;
+if(search&&!Object.values(l).some(v=>String(v).toLowerCase().includes(search.toLowerCase())))return false;
+return true;
+});
+
+const handleCreate=(data)=>{
+const lead={...data,id:gid(),leadNumber:genNum('LD',leads),status:'new',assignedTo:user.id,assignedName:user.name,createdAt:new Date().toLocaleString('en-IN')};
+setLeads(p=>[...p,lead]);
+addAudit('create','lead',lead.id,'Lead '+lead.leadNumber+' created for '+lead.clientName);
+setShowForm(false);
+};
+
+const handleConvert=(leadId,paymentData)=>{
+const lead=leads.find(l=>l.id===leadId);
+if(!lead)return;
+setLeads(p=>p.map(l=>l.id===leadId?{...l,status:'converted',convertedAt:new Date().toLocaleString('en-IN')}:l));
+const booking={id:gid(),bookingNumber:genNum('BK',bookings),leadId:lead.id,
+clientName:lead.clientName,clientPhone:lead.clientPhone,clientEmail:lead.clientEmail,
+travelType:lead.travelType==='full_package'?'full_package':'flight_only',
+destination:lead.destination,travelFrom:lead.travelFrom,travelTo:lead.travelTo,
+totalPax:Number(lead.adults||1)+Number(lead.children||0)+Number(lead.infants||0),
+totalValue:Number(lead.estimatedValue),totalPaid:Number(paymentData.amount),
+balanceDue:Number(lead.estimatedValue)-Number(paymentData.amount),
+paymentStatus:Number(paymentData.amount)>=Number(lead.estimatedValue)?'fully_paid':'advance_paid',
+bookingStatus:'payment_pending',salesAgentId:user.id,salesAgentName:user.name,
+specialRequests:lead.notes||'',createdAt:new Date().toLocaleString('en-IN')};
+setBookings(p=>[...p,booking]);
+
+const payment={id:gid(),bookingId:booking.id,bookingNumber:booking.bookingNumber,
+paymentNumber:genNum('PAY',payments),amount:Number(paymentData.amount),
+paymentType:Number(paymentData.amount)>=Number(lead.estimatedValue)?'full':'advance',
+paymentMode:paymentData.mode,transactionRef:paymentData.ref,paymentDate:today(),
+receivedBy:user.id,receivedByName:user.name,status:'pending',
+clientName:booking.clientName,createdAt:new Date().toLocaleString('en-IN')};
+setPayments(p=>[...p,payment]);
+
+fireT1(booking,payment);
+addAudit('convert','lead',lead.id,'Lead converted to Booking '+booking.bookingNumber);
+setShowConvert(null);
+};
+
+return(<div>
+<div className="card">
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+<div className="card-t" style={{margin:0}}>\ud83d\udccb Lead Management</div>
+<button className="btn btn-p" onClick={()=>setShowForm(true)}>+ New Lead</button>
+</div>
+<div className="fr">
+<input className="sb" placeholder="\ud83d\udd0d Search leads..." value={search} onChange={e=>setSearch(e.target.value)}/>
+<div className="tabs">
+{['all','new','contacted','quoted','negotiating','converted','lost'].map(s=><button key={s} className={filter===s?'act':''} onClick={()=>setFilter(s)}>{s==='all'?'All':s.charAt(0).toUpperCase()+s.slice(1)}</button>)}
+</div>
+</div>
+<div className="sg" style={{gridTemplateColumns:'repeat(6,1fr)'}}>
+{['new','contacted','quoted','negotiating','converted','lost'].map(s=>{
+const c=leads.filter(l=>l.status===s).length;
+return <div key={s} className={'sc '+(s==='converted'?'s':s==='lost'?'d':'')} style={{padding:'8px 12px'}}><div className="lb">{s}</div><div className="vl" style={{fontSize:18}}>{c}</div></div>;
+})}
+</div>
+<div className="tw"><table><thead><tr><th>Lead #</th><th>Client</th><th>Phone</th><th>Destination</th><th>Travel Type</th><th>Value</th><th>Status</th><th>Assigned</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+{filtered.length===0?<tr><td colSpan="10" className="empty">No leads found</td></tr>:
+filtered.map(l=><tr key={l.id}>
+<td style={{fontFamily:'monospace',fontWeight:600}}>{l.leadNumber}</td>
+<td style={{fontWeight:600}}>{l.clientName}</td><td>{l.clientPhone}</td><td>{l.destination}</td>
+<td>{l.travelType?.replace(/_/g,' ')}</td><td style={{fontWeight:600}}>{fmt(l.estimatedValue)}</td>
+<td><StatusBadge status={l.status}/></td><td>{l.assignedName}</td><td style={{fontSize:11}}>{l.createdAt}</td>
+<td><div className="bg" style={{margin:0}}>
+{l.status!=='converted'&&l.status!=='lost'&&<>
+<select className="btn btn-o btn-sm" value={l.status} onChange={e=>{setLeads(p=>p.map(x=>x.id===l.id?{...x,status:e.target.value}:x));addAudit('update','lead',l.id,'Status changed to '+e.target.value);}}>
+<option value="new">New</option><option value="contacted">Contacted</option><option value="quoted">Quoted</option><option value="negotiating">Negotiating</option><option value="lost">Lost</option>
+</select>
+<button className="btn btn-s btn-sm" onClick={()=>setShowConvert(l.id)}>Convert</button>
+</>}
+</div></td>
+</tr>)}
+</tbody></table></div>
+</div>
+{showForm&&<LeadForm onClose={()=>setShowForm(false)} onSave={handleCreate}/>}
+{showConvert&&<ConvertModal lead={leads.find(l=>l.id===showConvert)} onClose={()=>setShowConvert(null)} onConvert={handleConvert}/>}
+</div>);
+}
+
+function LeadForm({onClose,onSave}){
+const[f,sF]=useState({clientName:'',clientPhone:'',clientEmail:'',source:'walk_in',travelType:'full_package',destination:'',travelFrom:'',travelTo:'',adults:'1',children:'0',infants:'0',estimatedValue:'',notes:''});
+const u=(k,v)=>sF(p=>({...p,[k]:v}));
+return(<div className="mo" onClick={onClose}><div className="mc" onClick={e=>e.stopPropagation()}>
+<div className="mc-t">\ud83d\udccb New Lead <button className="mc-x" onClick={onClose}>\u00d7</button></div>
+<div className="fg">
+<div className="fi"><label>Client Name *</label><input value={f.clientName} onChange={e=>u('clientName',e.target.value)}/></div>
+<div className="fi"><label>Phone *</label><input value={f.clientPhone} onChange={e=>u('clientPhone',e.target.value)}/></div>
+<div className="fi"><label>Email</label><input value={f.clientEmail} onChange={e=>u('clientEmail',e.target.value)}/></div>
+<div className="fi"><label>Source</label><select value={f.source} onChange={e=>u('source',e.target.value)}><option value="walk_in">Walk-in</option><option value="phone">Phone</option><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="website">Website</option><option value="referral">Referral</option><option value="social_media">Social Media</option></select></div>
+<div className="fi"><label>Travel Type</label><select value={f.travelType} onChange={e=>u('travelType',e.target.value)}><option value="domestic">Domestic Flight</option><option value="international">International Flight</option><option value="full_package">Full Package</option></select></div>
+<div className="fi"><label>Destination</label><input value={f.destination} onChange={e=>u('destination',e.target.value)} placeholder="e.g. Goa, Dubai"/></div>
+<div className="fi"><label>Travel From</label><input type="date" value={f.travelFrom} onChange={e=>u('travelFrom',e.target.value)}/></div>
+<div className="fi"><label>Travel To</label><input type="date" value={f.travelTo} onChange={e=>u('travelTo',e.target.value)}/></div>
+<div className="fi"><label>Adults</label><input type="number" value={f.adults} onChange={e=>u('adults',e.target.value)}/></div>
+<div className="fi"><label>Children</label><input type="number" value={f.children} onChange={e=>u('children',e.target.value)}/></div>
+<div className="fi"><label>Infants</label><input type="number" value={f.infants} onChange={e=>u('infants',e.target.value)}/></div>
+<div className="fi"><label>Package Value (\u20b9)</label><input type="number" value={f.estimatedValue} onChange={e=>u('estimatedValue',e.target.value)}/></div>
+</div>
+<div className="fi" style={{marginBottom:14}}><label>Notes</label><textarea value={f.notes} onChange={e=>u('notes',e.target.value)} rows="2" style={{padding:'7px 10px',border:'1px solid var(--brd)',borderRadius:6,fontSize:13}}/></div>
+<div className="bg"><button className="btn btn-p" onClick={()=>{if(!f.clientName||!f.clientPhone){alert('Name and Phone required');return;}onSave(f);}}>\u2713 Save Lead</button><button className="btn btn-o" onClick={onClose}>Cancel</button></div>
+</div></div>);
+}
+
+function ConvertModal({lead,onClose,onConvert}){
+const[f,sF]=useState({amount:'',mode:'bank_transfer',ref:''});
+if(!lead)return null;
+return(<div className="mo" onClick={onClose}><div className="mc" onClick={e=>e.stopPropagation()}>
+<div className="mc-t">\u2705 Convert Lead to Booking <button className="mc-x" onClick={onClose}>\u00d7</button></div>
+<div className="al al-i">Converting: <strong>{lead.leadNumber}</strong> — {lead.clientName} — {lead.destination} — {fmt(lead.estimatedValue)}</div>
+<div className="card-t">Record Payment</div>
+<div className="fg">
+<div className="fi"><label>Payment Amount (\u20b9) *</label><input type="number" value={f.amount} onChange={e=>sF(p=>({...p,amount:e.target.value}))} placeholder="Advance or full amount"/></div>
+<div className="fi"><label>Payment Mode</label><select value={f.mode} onChange={e=>sF(p=>({...p,mode:e.target.value}))}><option value="cash">Cash</option><option value="upi">UPI</option><option value="bank_transfer">Bank Transfer (NEFT/RTGS)</option><option value="credit_card">Credit Card</option><option value="cheque">Cheque</option></select></div>
+<div className="fi"><label>Transaction Ref / UTR</label><input value={f.ref} onChange={e=>sF(p=>({...p,ref:e.target.value}))}/></div>
+</div>
+<div style={{marginTop:8,padding:10,background:'#f0f4ff',borderRadius:8,fontSize:12}}>
+<strong>What happens next:</strong><br/>
+1. Booking record created \u2192 2. Accounts team notified for payment verification \u2192 3. Invoice auto-generated after verification \u2192 4. Ticketing team receives booking request
+</div>
+<div className="bg" style={{marginTop:12}}>
+<button className="btn btn-s" onClick={()=>{if(!f.amount){alert('Enter payment amount');return;}onConvert(lead.id,f);}}>\u2713 Convert & Create Booking</button>
+<button className="btn btn-o" onClick={onClose}>Cancel</button>
+</div>
+</div></div>);
+}
+
+// ═══ PAYMENT MANAGEMENT ═══
+function PaymentMgmt({user,payments,setPayments,bookings,setBookings,addAudit,fireT2,documents,fireT3}){
+const[filter,setFilter]=useState(user.role==='accounts'?'pending':'all');
+const filtered=payments.filter(p=>filter==='all'||p.status===filter);
+
+const verifyPayment=(payId)=>{
+const pay=payments.find(p=>p.id===payId);
+if(!pay)return;
+setPayments(p=>p.map(x=>x.id===payId?{...x,status:'verified',verifiedBy:user.id,verifiedByName:user.name,verifiedAt:new Date().toLocaleString('en-IN')}:x));
+const booking=bookings.find(b=>b.id===pay.bookingId);
+if(booking){
+const newStatus=Number(pay.amount)>=Number(booking.totalValue)?'fully_paid':'advance_paid';
+setBookings(p=>p.map(b=>b.id===booking.id?{...b,paymentStatus:newStatus,bookingStatus:'confirmed',accountsVerifiedBy:user.id}:b));
+fireT2(booking,pay);
+}
+};
+
+const rejectPayment=(payId)=>{
+setPayments(p=>p.map(x=>x.id===payId?{...x,status:'rejected',verifiedBy:user.id,verifiedByName:user.name}:x));
+addAudit('reject','payment',payId,'Payment rejected');
+};
+
+return(<div>
+<div className="card">
+<div className="card-t">\ud83d\udcb3 {user.role==='accounts'?'Payment Verification Queue':'Payment Register'}</div>
+{user.role==='accounts'&&payments.filter(p=>p.status==='pending').length>0&&
+<div className="al al-w">\u26a0\ufe0f {payments.filter(p=>p.status==='pending').length} payment(s) awaiting your verification</div>}
+<div className="tabs">
+{['all','pending','verified','rejected'].map(s=><button key={s} className={filter===s?'act':''} onClick={()=>setFilter(s)}>
+{s==='all'?'All':s.charAt(0).toUpperCase()+s.slice(1)} ({payments.filter(p=>s==='all'||p.status===s).length})
+</button>)}
+</div>
+<div className="tw"><table><thead><tr><th>Payment #</th><th>Booking</th><th>Client</th><th>Amount</th><th>Type</th><th>Mode</th><th>Ref/UTR</th><th>Received By</th><th>Status</th><th>Verified By</th>{user.role==='accounts'&&<th>Actions</th>}</tr></thead><tbody>
+{filtered.length===0?<tr><td colSpan="11" className="empty">No payments</td></tr>:
+filtered.map(p=><tr key={p.id} className={p.status==='pending'?'hl':''}>
+<td style={{fontFamily:'monospace'}}>{p.paymentNumber}</td>
+<td style={{fontFamily:'monospace',fontWeight:600}}>{p.bookingNumber}</td>
+<td>{p.clientName}</td>
+<td style={{fontWeight:700,fontSize:14}}>{fmt(p.amount)}</td>
+<td><StatusBadge status={p.paymentType}/></td>
+<td>{p.paymentMode?.replace(/_/g,' ')}</td>
+<td style={{fontFamily:'monospace'}}>{p.transactionRef||'-'}</td>
+<td>{p.receivedByName}</td>
+<td><StatusBadge status={p.status}/></td>
+<td>{p.verifiedByName||'-'}</td>
+{user.role==='accounts'&&<td>{p.status==='pending'&&<div className="bg" style={{margin:0}}>
+<button className="btn btn-s btn-sm" onClick={()=>verifyPayment(p.id)}>\u2713 Verify</button>
+<button className="btn btn-d btn-sm" onClick={()=>rejectPayment(p.id)}>\u2717 Reject</button>
+</div>}</td>}
+</tr>)}
+</tbody></table></div>
+</div>
+</div>);
+}
+
+// ═══ TICKETING MODULE ═══
+function TicketingModule({user,flights,setFlights,bookings,setBookings,documents,addAudit,fireT4}){
+const[showIssue,setShowIssue]=useState(null);
+const queue=flights.filter(f=>f.ticketStatus==='requested');
+const issued=flights.filter(f=>f.ticketStatus==='ticketed');
+
+const issueTicket=(flightId,data)=>{
+const fl={...flights.find(f=>f.id===flightId),...data,ticketStatus:'ticketed',bookedBy:user.id,bookedByName:user.name,issuedAt:new Date().toLocaleString('en-IN')};
+setFlights(p=>p.map(f=>f.id===flightId?fl:f));
+const booking=bookings.find(b=>b.id===fl.bookingId);
+if(booking){
+setBookings(p=>p.map(b=>b.id===booking.id?{...b,bookingStatus:'ticketed'}:b));
+fireT4(fl,booking);
+}
+setShowIssue(null);
+};
+
+return(<div>
+<div className="card">
+<div className="card-t">\u2708\ufe0f Ticketing Queue — Pending Requests</div>
+{queue.length===0?<div className="empty">\u2705 No pending ticket requests</div>:
+<div className="tw"><table><thead><tr><th>Booking #</th><th>Client</th><th>Sector</th><th>Travel Date</th><th>Requested At</th><th>Actions</th></tr></thead><tbody>
+{queue.map(f=><tr key={f.id}>
+<td style={{fontFamily:'monospace',fontWeight:600}}>{f.bookingNumber}</td>
+<td>{f.clientName}</td><td style={{fontWeight:600}}>{f.sector}</td><td>{f.departureDate}</td><td style={{fontSize:11}}>{f.createdAt}</td>
+<td><button className="btn btn-p btn-sm" onClick={()=>setShowIssue(f.id)}>\u2708\ufe0f Issue Ticket</button></td>
+</tr>)}
+</tbody></table></div>}
+</div>
+{issued.length>0&&<div className="card">
+<div className="card-t">\u2705 Issued Tickets</div>
+<div className="tw"><table><thead><tr><th>Booking #</th><th>Client</th><th>PNR</th><th>Airline</th><th>Flight</th><th>Sector</th><th>Portal</th><th>Fare</th><th>Issued By</th><th>Date</th></tr></thead><tbody>
+{issued.map(f=><tr key={f.id}>
+<td style={{fontFamily:'monospace'}}>{f.bookingNumber}</td><td>{f.clientName}</td>
+<td style={{fontFamily:'monospace',fontWeight:700,color:'var(--p)'}}>{f.pnr}</td>
+<td>{f.airline}</td><td>{f.flightNumber}</td><td>{f.sector}</td><td>{f.portalUsed}</td>
+<td style={{fontWeight:600}}>{fmt(f.totalFare)}</td><td>{f.bookedByName}</td><td style={{fontSize:11}}>{f.issuedAt}</td>
+</tr>)}
+</tbody></table></div>
+</div>}
+{showIssue&&<IssueTicketModal flight={flights.find(f=>f.id===showIssue)} onClose={()=>setShowIssue(null)} onIssue={issueTicket}/>}
+</div>);
+}
+
+function IssueTicketModal({flight,onClose,onIssue}){
+const[f,sF]=useState({portalUsed:'',pnr:'',airline:'',flightNumber:'',baseFare:'',taxes:'',ticketClass:'economy'});
+if(!flight)return null;
+const total=(Number(f.baseFare)||0)+(Number(f.taxes)||0);
+return(<div className="mo" onClick={onClose}><div className="mc" onClick={e=>e.stopPropagation()}>
+<div className="mc-t">\u2708\ufe0f Issue Ticket — {flight.bookingNumber} <button className="mc-x" onClick={onClose}>\u00d7</button></div>
+<div className="al al-i">Client: <strong>{flight.clientName}</strong> | Sector: <strong>{flight.sector}</strong> | Travel: <strong>{flight.departureDate}</strong></div>
+<div className="fg">
+<div className="fi"><label>Portal Used *</label><select value={f.portalUsed} onChange={e=>sF(p=>({...p,portalUsed:e.target.value}))}><option value="">-- Select --</option>{PORTALS.map(p=><option key={p}>{p}</option>)}</select></div>
+<div className="fi"><label>PNR *</label><input value={f.pnr} onChange={e=>sF(p=>({...p,pnr:e.target.value.toUpperCase()}))} placeholder="e.g. ABC123"/></div>
+<div className="fi"><label>Airline *</label><input value={f.airline} onChange={e=>sF(p=>({...p,airline:e.target.value}))} placeholder="e.g. IndiGo"/></div>
+<div className="fi"><label>Flight Number</label><input value={f.flightNumber} onChange={e=>sF(p=>({...p,flightNumber:e.target.value.toUpperCase()}))} placeholder="e.g. 6E2045"/></div>
+<div className="fi"><label>Class</label><select value={f.ticketClass} onChange={e=>sF(p=>({...p,ticketClass:e.target.value}))}><option value="economy">Economy</option><option value="premium_economy">Premium Economy</option><option value="business">Business</option></select></div>
+<div className="fi"><label>Base Fare (\u20b9)</label><input type="number" value={f.baseFare} onChange={e=>sF(p=>({...p,baseFare:e.target.value}))}/></div>
+<div className="fi"><label>Taxes (\u20b9)</label><input type="number" value={f.taxes} onChange={e=>sF(p=>({...p,taxes:e.target.value}))}/></div>
+<div className="fi"><label>Total Fare</label><input value={fmt(total)} readOnly style={{background:'#f0f4ff',fontWeight:700}}/></div>
+</div>
+<div className="bg" style={{marginTop:12}}>
+<button className="btn btn-s" onClick={()=>{if(!f.portalUsed||!f.pnr||!f.airline){alert('Portal, PNR, and Airline required');return;}onIssue(flight.id,{...f,totalFare:total});}}>\u2713 Issue Ticket & Notify Sales</button>
+<button className="btn btn-o" onClick={onClose}>Cancel</button>
+</div>
+</div></div>);
+}
+
+// ═══ OPERATIONS MODULE ═══
+function OpsModule({user,services,setServices,bookings,setBookings,addAudit,fireT6}){
+const[showConfirm,setShowConfirm]=useState(null);
+const[showAdd,setShowAdd]=useState(null);
+const pending=services.filter(s=>s.status==='pending'||s.status==='requested');
+const confirmed=services.filter(s=>s.status==='confirmed');
+
+const confirmService=(svcId,data)=>{
+const svc={...services.find(s=>s.id===svcId),...data,status:'confirmed',handledBy:user.id,handledByName:user.name,confirmedAt:new Date().toLocaleString('en-IN')};
+setServices(p=>p.map(s=>s.id===svcId?svc:s));
+const booking=bookings.find(b=>b.id===svc.bookingId);
+if(booking)fireT6(svc,booking);
+setShowConfirm(null);
+};
+
+const addService=(bookingId,data)=>{
+const booking=bookings.find(b=>b.id===bookingId);
+const svc={id:gid(),bookingId,bookingNumber:booking?.bookingNumber||'',clientName:booking?.clientName||'',...data,status:'pending',handledBy:'',createdAt:new Date().toLocaleString('en-IN')};
+setServices(p=>[...p,svc]);
+setShowAdd(null);
+};
+
+return(<div>
+<div className="card">
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+<div className="card-t" style={{margin:0}}>\ud83c\udfe8 Operations — Service Queue</div>
+{bookings.filter(b=>b.bookingStatus==='operations_active').length>0&&
+<button className="btn btn-p" onClick={()=>setShowAdd(bookings.find(b=>b.bookingStatus==='operations_active')?.id)}>+ Add Service</button>}
+</div>
+{pending.length===0?<div className="empty">\u2705 No pending service requests</div>:
+<div className="tw"><table><thead><tr><th>Booking #</th><th>Client</th><th>Service</th><th>Vendor</th><th>Dates</th><th>Cost</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+{pending.map(s=><tr key={s.id}>
+<td style={{fontFamily:'monospace',fontWeight:600}}>{s.bookingNumber}</td><td>{s.clientName}</td>
+<td style={{fontWeight:600}}>{s.serviceType?.charAt(0).toUpperCase()+s.serviceType?.slice(1)}</td>
+<td>{s.vendorName||'-'}</td><td style={{fontSize:11}}>{s.checkIn} to {s.checkOut}</td>
+<td>{fmt(s.cost)}</td><td><StatusBadge status={s.status}/></td>
+<td><button className="btn btn-s btn-sm" onClick={()=>setShowConfirm(s.id)}>\u2713 Confirm</button></td>
+</tr>)}
+</tbody></table></div>}
+</div>
+{confirmed.length>0&&<div className="card">
+<div className="card-t">\u2705 Confirmed Services</div>
+<div className="tw"><table><thead><tr><th>Booking #</th><th>Client</th><th>Service</th><th>Vendor</th><th>Confirmation #</th><th>Cost</th><th>Selling Price</th><th>Handled By</th></tr></thead><tbody>
+{confirmed.map(s=><tr key={s.id}>
+<td style={{fontFamily:'monospace'}}>{s.bookingNumber}</td><td>{s.clientName}</td>
+<td>{s.serviceType}</td><td>{s.vendorName}</td>
+<td style={{fontFamily:'monospace'}}>{s.confirmationNumber||'-'}</td>
+<td>{fmt(s.cost)}</td><td>{fmt(s.sellingPrice)}</td><td>{s.handledByName}</td>
+</tr>)}
+</tbody></table></div>
+</div>}
+{showConfirm&&<ConfirmServiceModal service={services.find(s=>s.id===showConfirm)} onClose={()=>setShowConfirm(null)} onConfirm={confirmService}/>}
+{showAdd&&<AddServiceModal bookingId={showAdd} onClose={()=>setShowAdd(null)} onAdd={addService}/>}
+</div>);
+}
+
+function ConfirmServiceModal({service,onClose,onConfirm}){
+const[f,sF]=useState({vendorName:service?.vendorName||'',confirmationNumber:'',cost:service?.cost||'',sellingPrice:service?.sellingPrice||'',description:''});
+if(!service)return null;
+return(<div className="mo" onClick={onClose}><div className="mc" onClick={e=>e.stopPropagation()}>
+<div className="mc-t">\u2705 Confirm Service — {service.bookingNumber} <button className="mc-x" onClick={onClose}>\u00d7</button></div>
+<div className="al al-i">Service: <strong>{service.serviceType}</strong> | Client: <strong>{service.clientName}</strong> | {service.checkIn} to {service.checkOut}</div>
+<div className="fg">
+<div className="fi"><label>Vendor / Hotel Name *</label><input value={f.vendorName} onChange={e=>sF(p=>({...p,vendorName:e.target.value}))}/></div>
+<div className="fi"><label>Confirmation Number *</label><input value={f.confirmationNumber} onChange={e=>sF(p=>({...p,confirmationNumber:e.target.value}))}/></div>
+<div className="fi"><label>Cost to Company (\u20b9)</label><input type="number" value={f.cost} onChange={e=>sF(p=>({...p,cost:e.target.value}))}/></div>
+<div className="fi"><label>Selling Price (\u20b9)</label><input type="number" value={f.sellingPrice} onChange={e=>sF(p=>({...p,sellingPrice:e.target.value}))}/></div>
+</div>
+<div className="bg" style={{marginTop:12}}>
+<button className="btn btn-s" onClick={()=>{if(!f.vendorName){alert('Vendor name required');return;}onConfirm(service.id,f);}}>\u2713 Confirm & Notify Sales</button>
+<button className="btn btn-o" onClick={onClose}>Cancel</button>
+</div>
+</div></div>);
+}
+
+function AddServiceModal({bookingId,onClose,onAdd}){
+const[f,sF]=useState({serviceType:'hotel',vendorName:'',checkIn:'',checkOut:'',cost:'',sellingPrice:''});
+return(<div className="mo" onClick={onClose}><div className="mc" onClick={e=>e.stopPropagation()}>
+<div className="mc-t">+ Add Service <button className="mc-x" onClick={onClose}>\u00d7</button></div>
+<div className="fg">
+<div className="fi"><label>Service Type</label><select value={f.serviceType} onChange={e=>sF(p=>({...p,serviceType:e.target.value}))}><option value="hotel">Hotel</option><option value="transport">Transport</option><option value="sightseeing">Sightseeing</option><option value="insurance">Insurance</option><option value="visa">Visa</option></select></div>
+<div className="fi"><label>Vendor</label><input value={f.vendorName} onChange={e=>sF(p=>({...p,vendorName:e.target.value}))}/></div>
+<div className="fi"><label>Check-in / Start</label><input type="date" value={f.checkIn} onChange={e=>sF(p=>({...p,checkIn:e.target.value}))}/></div>
+<div className="fi"><label>Check-out / End</label><input type="date" value={f.checkOut} onChange={e=>sF(p=>({...p,checkOut:e.target.value}))}/></div>
+<div className="fi"><label>Cost (\u20b9)</label><input type="number" value={f.cost} onChange={e=>sF(p=>({...p,cost:e.target.value}))}/></div>
+<div className="fi"><label>Selling Price (\u20b9)</label><input type="number" value={f.sellingPrice} onChange={e=>sF(p=>({...p,sellingPrice:e.target.value}))}/></div>
+</div>
+<div className="bg"><button className="btn btn-p" onClick={()=>onAdd(bookingId,f)}>Add Service</button><button className="btn btn-o" onClick={onClose}>Cancel</button></div>
+</div></div>);
+}
+
+// ═══ BOOKING VIEW ═══
+function BookingView({user,bookings,payments,flights,services,documents,invoices}){
+const[sel,setSel]=useState(null);
+const[search,setSearch]=useState('');
+const filtered=bookings.filter(b=>!search||Object.values(b).some(v=>String(v).toLowerCase().includes(search.toLowerCase())));
+
+if(sel){
+const b=bookings.find(x=>x.id===sel);
+if(!b)return null;
+const bPay=payments.filter(p=>p.bookingId===b.id);
+const bFl=flights.filter(f=>f.bookingId===b.id);
+const bSvc=services.filter(s=>s.bookingId===b.id);
+const bDoc=documents.filter(d=>d.bookingId===b.id);
+const bInv=invoices.filter(i=>i.bookingId===b.id);
+return(<div>
+<button className="btn btn-o" onClick={()=>setSel(null)} style={{marginBottom:12}}>\u2190 Back to Bookings</button>
+<div className="card">
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+<div className="card-t" style={{margin:0}}>{b.bookingNumber} — {b.clientName}</div>
+<StatusBadge status={b.bookingStatus}/>
+</div>
+<div className="fg" style={{marginTop:12}}>
+<div><strong>Destination:</strong> {b.destination}</div>
+<div><strong>Travel:</strong> {b.travelFrom} to {b.travelTo}</div>
+<div><strong>Passengers:</strong> {b.totalPax}</div>
+<div><strong>Package Value:</strong> {fmt(b.totalValue)}</div>
+<div><strong>Paid:</strong> {fmt(b.totalPaid)}</div>
+<div><strong>Balance:</strong> <span style={{color:b.balanceDue>0?'var(--red)':'var(--grn)',fontWeight:700}}>{fmt(b.balanceDue)}</span></div>
+<div><strong>Sales Agent:</strong> {b.salesAgentName}</div>
+<div><strong>Payment Status:</strong> <StatusBadge status={b.paymentStatus}/></div>
+</div>
+</div>
+{/* Payments */}
+{bPay.length>0&&<div className="card"><div className="card-t">\ud83d\udcb3 Payments</div>
+<table><thead><tr><th>Payment #</th><th>Amount</th><th>Mode</th><th>Ref</th><th>Status</th></tr></thead><tbody>
+{bPay.map(p=><tr key={p.id}><td>{p.paymentNumber}</td><td style={{fontWeight:600}}>{fmt(p.amount)}</td><td>{p.paymentMode?.replace(/_/g,' ')}</td><td>{p.transactionRef||'-'}</td><td><StatusBadge status={p.status}/></td></tr>)}
+</tbody></table></div>}
+{/* Flights */}
+{bFl.length>0&&<div className="card"><div className="card-t">\u2708\ufe0f Flights</div>
+<table><thead><tr><th>PNR</th><th>Airline</th><th>Flight</th><th>Sector</th><th>Portal</th><th>Fare</th><th>Status</th></tr></thead><tbody>
+{bFl.map(f=><tr key={f.id}><td style={{fontWeight:700}}>{f.pnr||'-'}</td><td>{f.airline||'-'}</td><td>{f.flightNumber||'-'}</td><td>{f.sector}</td><td>{f.portalUsed||'-'}</td><td>{fmt(f.totalFare)}</td><td><StatusBadge status={f.ticketStatus}/></td></tr>)}
+</tbody></table></div>}
+{/* Services */}
+{bSvc.length>0&&<div className="card"><div className="card-t">\ud83c\udfe8 Services</div>
+<table><thead><tr><th>Type</th><th>Vendor</th><th>Dates</th><th>Confirmation #</th><th>Status</th></tr></thead><tbody>
+{bSvc.map(s=><tr key={s.id}><td>{s.serviceType}</td><td>{s.vendorName||'-'}</td><td>{s.checkIn} — {s.checkOut}</td><td>{s.confirmationNumber||'-'}</td><td><StatusBadge status={s.status}/></td></tr>)}
+</tbody></table></div>}
+{/* Invoices */}
+{bInv.length>0&&<div className="card"><div className="card-t">\ud83e\uddfe Invoices</div>
+<table><thead><tr><th>Invoice #</th><th>Type</th><th>Total</th><th>Paid</th><th>Balance</th><th>WhatsApp</th><th>Email</th></tr></thead><tbody>
+{bInv.map(i=><tr key={i.id}><td>{i.invoiceNumber}</td><td>{i.type?.replace(/_/g,' ')}</td><td style={{fontWeight:600}}>{fmt(i.totalAmount)}</td><td>{fmt(i.amountPaid)}</td><td style={{color:'var(--red)',fontWeight:600}}>{fmt(i.balanceDue)}</td><td>{i.sentWhatsapp?'\u2705':'\u274c'}</td><td>{i.sentEmail?'\u2705':'\u274c'}</td></tr>)}
+</tbody></table></div>}
+{/* Documents */}
+{bDoc.length>0&&<div className="card"><div className="card-t">\ud83d\udcc4 Documents</div>
+<div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+{bDoc.map(d=><div key={d.id} className="doc-chip">{d.documentType} — {d.passengerName||'General'}</div>)}
+</div></div>}
+</div>);
+}
+
+return(<div>
+<div className="card">
+<div className="card-t">\ud83d\udce6 All Bookings</div>
+<div className="fr"><input className="sb" placeholder="\ud83d\udd0d Search bookings..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+<div className="tw"><table><thead><tr><th>Booking #</th><th>Client</th><th>Phone</th><th>Destination</th><th>Travel Dates</th><th>Package Value</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Status</th><th>Sales Agent</th></tr></thead><tbody>
+{filtered.length===0?<tr><td colSpan="11" className="empty">No bookings</td></tr>:
+filtered.map(b=><tr key={b.id} style={{cursor:'pointer'}} onClick={()=>setSel(b.id)}>
+<td style={{fontFamily:'monospace',fontWeight:600,color:'var(--pl)'}}>{b.bookingNumber}</td>
+<td style={{fontWeight:600}}>{b.clientName}</td><td>{b.clientPhone}</td><td>{b.destination}</td>
+<td style={{fontSize:11}}>{b.travelFrom} — {b.travelTo}</td>
+<td style={{fontWeight:600}}>{fmt(b.totalValue)}</td><td>{fmt(b.totalPaid)}</td>
+<td style={{color:b.balanceDue>0?'var(--red)':'var(--grn)',fontWeight:600}}>{fmt(b.balanceDue)}</td>
+<td><StatusBadge status={b.paymentStatus}/></td><td><StatusBadge status={b.bookingStatus}/></td>
+<td>{b.salesAgentName}</td>
+</tr>)}
+</tbody></table></div>
+</div></div>);
+}
+
+// ═══ INVOICE VIEW ═══
+function InvoiceView({invoices}){
+return(<div className="card">
+<div className="card-t">\ud83e\uddfe Invoices</div>
+{invoices.length===0?<div className="empty">No invoices generated yet. Invoices are auto-created when Accounts verifies a payment.</div>:
+<div className="tw"><table><thead><tr><th>Invoice #</th><th>Booking</th><th>Client</th><th>Type</th><th>Total</th><th>Paid</th><th>Balance</th><th>GST</th><th>WhatsApp</th><th>Email</th><th>Date</th></tr></thead><tbody>
+{invoices.map(i=><tr key={i.id}>
+<td style={{fontFamily:'monospace',fontWeight:600}}>{i.invoiceNumber}</td>
+<td style={{fontFamily:'monospace'}}>{i.bookingNumber}</td><td>{i.clientName}</td>
+<td>{i.type?.replace(/_/g,' ')}</td>
+<td style={{fontWeight:700}}>{fmt(i.totalAmount)}</td><td>{fmt(i.amountPaid)}</td>
+<td style={{color:'var(--red)',fontWeight:600}}>{fmt(i.balanceDue)}</td>
+<td>{fmt(i.gst)}</td>
+<td>{i.sentWhatsapp?<span className="b b-ok">Sent</span>:<span className="b b-wrn">Pending</span>}</td>
+<td>{i.sentEmail?<span className="b b-ok">Sent</span>:<span className="b b-wrn">Pending</span>}</td>
+<td style={{fontSize:11}}>{i.createdAt}</td>
+</tr>)}
+</tbody></table></div>}
+</div>);
+}
+
+// ═══ DOCUMENT MANAGEMENT ═══
+function DocMgmt({user,documents,setDocuments,bookings,addAudit,fireT3}){
+const[showUpload,setShowUpload]=useState(false);
+const upload=(data)=>{
+const doc={id:gid(),...data,uploadedBy:user.id,uploadedByName:user.name,isVerified:false,createdAt:new Date().toLocaleString('en-IN')};
+setDocuments(p=>[...p,doc]);
+addAudit('upload','document',doc.id,data.documentType+' uploaded for booking '+data.bookingNumber);
+// Check if this completes document requirements -> fire T3
+const booking=bookings.find(b=>b.id===data.bookingId);
+if(booking&&booking.bookingStatus==='confirmed'){
+fireT3(booking);
+}
+setShowUpload(false);
+};
+return(<div className="card">
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+<div className="card-t" style={{margin:0}}>\ud83d\udcc4 Document Management</div>
+<button className="btn btn-p" onClick={()=>setShowUpload(true)}>+ Upload Document</button>
+</div>
+{documents.length===0?<div className="empty">No documents uploaded yet</div>:
+<div className="tw"><table><thead><tr><th>Booking #</th><th>Type</th><th>Passenger</th><th>Filename</th><th>Uploaded By</th><th>Date</th><th>Verified</th></tr></thead><tbody>
+{documents.map(d=><tr key={d.id}>
+<td style={{fontFamily:'monospace'}}>{d.bookingNumber}</td><td className="b b-info" style={{fontSize:10}}>{d.documentType}</td>
+<td>{d.passengerName||'-'}</td><td>{d.fileName}</td><td>{d.uploadedByName}</td><td style={{fontSize:11}}>{d.createdAt}</td>
+<td>{d.isVerified?'\u2705':'\u23f3'}</td>
+</tr>)}
+</tbody></table></div>}
+{showUpload&&<UploadDocModal bookings={bookings} onClose={()=>setShowUpload(false)} onUpload={upload}/>}
+</div>);
+}
+
+function UploadDocModal({bookings,onClose,onUpload}){
+const activeBookings=bookings.filter(b=>!['completed','cancelled'].includes(b.bookingStatus));
+const[f,sF]=useState({bookingId:'',documentType:'passport',passengerName:'',fileName:''});
+const booking=bookings.find(b=>b.id===f.bookingId);
+return(<div className="mo" onClick={onClose}><div className="mc" onClick={e=>e.stopPropagation()}>
+<div className="mc-t">\ud83d\udcc4 Upload Document <button className="mc-x" onClick={onClose}>\u00d7</button></div>
+<div className="fg">
+<div className="fi"><label>Booking *</label><select value={f.bookingId} onChange={e=>sF(p=>({...p,bookingId:e.target.value}))}><option value="">-- Select --</option>{activeBookings.map(b=><option key={b.id} value={b.id}>{b.bookingNumber} — {b.clientName}</option>)}</select></div>
+<div className="fi"><label>Document Type</label><select value={f.documentType} onChange={e=>sF(p=>({...p,documentType:e.target.value}))}><option value="passport">Passport</option><option value="visa">Visa</option><option value="photo">Photo</option><option value="id_proof">ID Proof</option><option value="ticket">E-Ticket</option><option value="insurance">Insurance</option><option value="voucher">Voucher</option><option value="other">Other</option></select></div>
+<div className="fi"><label>Passenger Name</label><input value={f.passengerName} onChange={e=>sF(p=>({...p,passengerName:e.target.value}))}/></div>
+<div className="fi"><label>File (simulated)</label><input value={f.fileName} onChange={e=>sF(p=>({...p,fileName:e.target.value}))} placeholder="e.g. passport_rajesh.pdf"/></div>
+</div>
+<div className="bg"><button className="btn btn-p" onClick={()=>{if(!f.bookingId||!f.fileName){alert('Select booking and enter filename');return;}onUpload({...f,bookingNumber:booking?.bookingNumber||''});}}>\u2713 Upload</button><button className="btn btn-o" onClick={onClose}>Cancel</button></div>
+</div></div>);
+}
+
+// ═══ AUDIT LOG ═══
+function AuditView({auditLog}){
+return(<div className="card">
+<div className="card-t">\ud83d\udcdd Audit Log — Complete Activity Trail</div>
+{auditLog.length===0?<div className="empty">No activity recorded yet</div>:
+<div className="tw"><table><thead><tr><th>#</th><th>Timestamp</th><th>User</th><th>Action</th><th>Entity</th><th>Entity ID</th><th>Details</th></tr></thead><tbody>
+{auditLog.map((a,i)=><tr key={a.id}>
+<td>{auditLog.length-i}</td><td style={{fontSize:11}}>{a.time}</td><td>{a.userName}</td>
+<td><span className={'b '+(a.action.includes('trigger')?'b-wrn':a.action==='create'?'b-ok':a.action==='reject'?'b-inv':'b-info')}>{a.action}</span></td>
+<td>{a.entityType}</td><td style={{fontFamily:'monospace',fontSize:10}}>{a.entityId?.slice(0,8)}</td>
+<td style={{fontSize:11,maxWidth:300}}>{a.details}</td>
+</tr>)}
+</tbody></table></div>}
+</div>);
+}
+
+// ═══ NOTIFICATION PANEL ═══
+function NotifPanel({notifications,setNotifs,user,onClose}){
+const myNotifs=notifications.filter(n=>n.userId===user.id||user.role==='admin').slice(0,20);
+const markRead=(id)=>setNotifs(p=>p.map(n=>n.id===id?{...n,isRead:true}:n));
+const markAllRead=()=>setNotifs(p=>p.map(n=>({...n,isRead:true})));
+return(<div className="np">
+<div className="np-t">\ud83d\udd14 Notifications <div><button className="btn btn-sm btn-o" onClick={markAllRead} style={{marginRight:4}}>Read All</button><button className="mc-x" onClick={onClose}>\u00d7</button></div></div>
+{myNotifs.length===0?<div className="empty">No notifications</div>:
+myNotifs.map(n=><div key={n.id} className={'np-item'+(n.isRead?'':' unread')} onClick={()=>markRead(n.id)}>
+<div className="np-title">{n.title}</div>
+<div className="np-msg">{n.message}</div>
+<div className="np-time">{n.time}</div>
+</div>)}
+</div>);
+}
+
+ReactDOM.render(<App/>,document.getElementById('root'));
+</script>
+</body>
+</html>
