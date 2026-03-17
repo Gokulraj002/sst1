@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Agency Reconciliation System</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#1F3864;--primary-light:#2E75B6;--accent:#D6E4F0;--bg:#F5F7FA;--white:#fff;--text:#1a1a2e;--text-light:#555;--danger:#dc3545;--warning:#f59e0b;--success:#10b981;--border:#dee2e6;--shadow:0 2px 8px rgba(0,0,0,.08);--radius:8px}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.app-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.app-header h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+.app-header .date-display{font-size:13px;opacity:.85}
+.nav-bar{background:var(--white);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 16px;box-shadow:var(--shadow);position:sticky;top:56px;z-index:99}
+.nav-bar button{padding:12px 20px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-light);white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s}
+.nav-bar button:hover{color:var(--primary);background:#f0f4ff}
+.nav-bar button.active{color:var(--primary);border-bottom-color:var(--primary-light);background:#f0f4ff}
+.main{padding:20px;max-width:1600px;margin:0 auto}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.card-title{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title .icon{font-size:20px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border-left:4px solid var(--primary-light)}
+.stat-card.danger{border-left-color:var(--danger)}
+.stat-card.warning{border-left-color:var(--warning)}
+.stat-card.success{border-left-color:var(--success)}
+.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-light);font-weight:600}
+.stat-card .value{font-size:24px;font-weight:700;color:var(--primary);margin-top:4px}
+.stat-card.danger .value{color:var(--danger)}
+.stat-card.warning .value{color:var(--warning)}
+.stat-card.success .value{color:var(--success)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(46,117,182,.15)}
+.btn{padding:8px 20px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-light)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#059669}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-warning{background:var(--warning);color:#fff}.btn-warning:hover{background:#d97706}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:#f8f9fa}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-group{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--primary);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:hover{background:#f8faff}
+.table-wrap{overflow-x:auto;max-height:500px;overflow-y:auto;border-radius:var(--radius);border:1px solid var(--border)}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:inline-block}
+.badge-ok{background:#d1fae5;color:#065f46}
+.badge-investigate{background:#fee2e2;color:#991b1b}
+.badge-warning{background:#fef3c7;color:#92400e}
+.badge-critical{background:#dc3545;color:#fff}
+.badge-high{background:#fee2e2;color:#991b1b}
+.badge-medium{background:#fef3c7;color:#92400e}
+.badge-low{background:#d1fae5;color:#065f46}
+.badge-personal{background:#dc3545;color:#fff;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.highlight-row{background:#fff5f5!important}
+.section-divider{border-top:2px solid var(--accent);margin:24px 0;padding-top:16px}
+.alert-box{padding:12px 16px;border-radius:6px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:8px}
+.alert-danger{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.alert-warning{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.alert-info{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--white);border-radius:12px;padding:24px;max-width:900px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-title{font-size:18px;font-weight:700;color:var(--primary);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);padding:4px 8px}
+.print-section{display:none}
+@media print{.nav-bar,.app-header,.btn,.form-grid,.no-print{display:none!important}.print-section{display:block}.card{box-shadow:none;border:1px solid #ddd}}
+.empty-state{text-align:center;padding:40px;color:var(--text-light)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.tabs-mini{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tabs-mini button{padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.tabs-mini button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.portal-balance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.portal-balance-card{background:var(--white);border-radius:8px;padding:14px;border:1px solid var(--border);transition:all .2s}
+.portal-balance-card:hover{box-shadow:var(--shadow)}
+.portal-balance-card .portal-name{font-weight:700;color:var(--primary);font-size:14px;margin-bottom:8px}
+.portal-balance-card .balance-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.progress-bar{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-bar .fill{height:100%;border-radius:3px;transition:width .3s}
+.export-info{background:#f0f4ff;border:1px solid var(--accent);border-radius:8px;padding:12px;font-size:12px;color:var(--primary);margin-top:12px}
+input[type="number"]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.search-box{padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;width:250px}
+.filter-row{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo } = React;
+
+const PORTALS = ["IndiGo (6E)","Akasa Air","Air India Express","MakeMyTrip","BooknTravel","Galileo/Travelport","Amadeus","SpiceJet","Vistara/Air India","GoFirst","TBO","Riya Travel"];
+const STAFF = ["Staff Member 1","Staff Member 2","Staff Member 3","Staff Member 4","Staff Member 5","Staff Member 6"];
+const TICKET_TYPES = ["One-Way","Round Trip","Multi-City","Group Booking"];
+const BOOKING_SOURCES = ["Walk-in","Phone Call","WhatsApp","Email","Online","Corporate Client","Agent Referral","Personal"];
+const PAYMENT_MODES = ["Cash","UPI","Bank Transfer","Credit Card","Cheque","Corporate Credit"];
+const FUND_METHODS = ["NEFT","RTGS","IMPS","Credit Card","Debit Card","UPI","Cheque","Cash Deposit"];
+const EXCEPTION_TYPES = ["Personal Ticket","Unauthorized Portal","After-Hours Booking","High Value Ticket","Balance Mismatch","Missing PNR","Duplicate Booking","Unverified Transaction","Fund Loading Discrepancy","Other"];
+const SEVERITY_LEVELS = ["Critical","High","Medium","Low"];
+const INV_STATUS = ["Open","Under Investigation","Resolved","Escalated","Closed"];
+
+const today = () => new Date().toISOString().split('T')[0];
+const now = () => new Date().toTimeString().slice(0,5);
+const fmt = (n) => n != null && !isNaN(n) ? '₹' + Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}) : '₹0.00';
+const fmtInt = (n) => n != null ? Number(n).toLocaleString('en-IN') : '0';
+const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+function App() {
+  const [tab, setTab] = useState('dashboard');
+  const [transactions, setTransactions] = useState([]);
+  const [fundLoads, setFundLoads] = useState([]);
+  const [reconciliation, setReconciliation] = useState(
+    PORTALS.reduce((a, p) => ({...a, [p]: {opening:0,fundsLoaded:0,ticketCount:0,ticketValue:0,refunds:0,charges:0,closingPortal:0}}), {})
+  );
+  const [reconDate, setReconDate] = useState(today());
+  const [exceptions, setExceptions] = useState([]);
+  const [showModal, setShowModal] = useState(null);
+  const [editItem, setEditItem] = useState(null);
+
+  // Auto-detect exceptions
+  useEffect(() => {
+    const newExceptions = [];
+    transactions.forEach(t => {
+      if (t.bookingSource === 'Personal' && !exceptions.find(e => e.pnr === t.pnr && e.type === 'Personal Ticket')) {
+        newExceptions.push({id:genId(),date:today(),type:'Personal Ticket',staff:t.staff,portal:t.portal,pnr:t.pnr,passenger:t.passenger,amount:t.totalAmt,desc:'Personal booking detected',severity:'High',status:'Open',resolution:'',resolvedDate:''});
+      }
+      if (Number(t.totalAmt) > 50000 && !exceptions.find(e => e.pnr === t.pnr && e.type === 'High Value Ticket')) {
+        newExceptions.push({id:genId(),date:today(),type:'High Value Ticket',staff:t.staff,portal:t.portal,pnr:t.pnr,passenger:t.passenger,amount:t.totalAmt,desc:'Ticket exceeds ₹50,000 threshold',severity:'Medium',status:'Open',resolution:'',resolvedDate:''});
+      }
+    });
+    if (newExceptions.length > 0) setExceptions(prev => [...prev, ...newExceptions]);
+  }, [transactions]);
+
+  const stats = useMemo(() => {
+    const totalTickets = transactions.length;
+    const totalValue = transactions.reduce((s,t) => s + (Number(t.totalAmt)||0), 0);
+    const totalFundsLoaded = fundLoads.reduce((s,f) => s + (Number(f.amount)||0), 0);
+    const personalTickets = transactions.filter(t => t.bookingSource === 'Personal').length;
+    const personalValue = transactions.filter(t => t.bookingSource === 'Personal').reduce((s,t) => s + (Number(t.totalAmt)||0), 0);
+    const openExceptions = exceptions.filter(e => e.status === 'Open' || e.status === 'Under Investigation').length;
+    const totalVariance = Object.values(reconciliation).reduce((s,r) => {
+      const calc = (Number(r.opening)||0) + (Number(r.fundsLoaded)||0) - (Number(r.ticketValue)||0) + (Number(r.refunds)||0) - (Number(r.charges)||0);
+      return s + ((Number(r.closingPortal)||0) - calc);
+    }, 0);
+    const portalCount = new Set(transactions.map(t=>t.portal)).size;
+    return {totalTickets,totalValue,totalFundsLoaded,personalTickets,personalValue,openExceptions,totalVariance,portalCount};
+  }, [transactions, fundLoads, reconciliation, exceptions]);
+
+  const tabs = [
+    {id:'dashboard',label:'Dashboard',icon:'📊'},
+    {id:'transactions',label:'Daily Transaction Log',icon:'🎫'},
+    {id:'fundloading',label:'Fund Loading',icon:'💰'},
+    {id:'reconciliation',label:'Daily Reconciliation',icon:'📋'},
+    {id:'stafftracker',label:'Staff Tracker',icon:'👥'},
+    {id:'exceptions',label:'Exception Report',icon:'🚨'},
+    {id:'balances',label:'Portal Balances',icon:'🏦'},
+    {id:'sop',label:'SOP & Controls',icon:'📘'},
+  ];
+
+  return (
+    <div>
+      <header className="app-header">
+        <div>
+          <h1>✈️ Travel Agency Reconciliation System</h1>
+          <div className="date-display">Fund Tracking • Ticket Reconciliation • Staff Accountability</div>
+        </div>
+        <div style={{textAlign:'right'}}>
+          <div style={{fontSize:'14px',fontWeight:600}}>{new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+          <div style={{fontSize:'12px',opacity:.8}}>Active Portals: {PORTALS.length} | Staff: {STAFF.length}</div>
+        </div>
+      </header>
+
+      <nav className="nav-bar">
+        {tabs.map(t => (
+          <button key={t.id} className={tab===t.id?'active':''} onClick={()=>setTab(t.id)}>
+            {t.icon} {t.label}
+          </button>
+        ))}
+      </nav>
+
+      <main className="main">
+        {tab === 'dashboard' && <Dashboard stats={stats} transactions={transactions} exceptions={exceptions} reconciliation={reconciliation} />}
+        {tab === 'transactions' && <TransactionLog transactions={transactions} setTransactions={setTransactions} showModal={showModal} setShowModal={setShowModal} />}
+        {tab === 'fundloading' && <FundLoading fundLoads={fundLoads} setFundLoads={setFundLoads} showModal={showModal} setShowModal={setShowModal} />}
+        {tab === 'reconciliation' && <Reconciliation reconciliation={reconciliation} setReconciliation={setReconciliation} reconDate={reconDate} setReconDate={setReconDate} />}
+        {tab === 'stafftracker' && <StaffTracker transactions={transactions} />}
+        {tab === 'exceptions' && <ExceptionReport exceptions={exceptions} setExceptions={setExceptions} />}
+        {tab === 'balances' && <PortalBalances reconciliation={reconciliation} />}
+        {tab === 'sop' && <SOPControls />}
+      </main>
+
+      {showModal === 'addTransaction' && <AddTransactionModal onClose={()=>setShowModal(null)} onSave={(t)=>{setTransactions(prev=>[...prev,{...t,id:genId(),srNo:prev.length+1}]);setShowModal(null);}} />}
+      {showModal === 'addFundLoad' && <AddFundLoadModal onClose={()=>setShowModal(null)} onSave={(f)=>{setFundLoads(prev=>[...prev,{...f,id:genId(),srNo:prev.length+1}]);setShowModal(null);}} />}
+    </div>
+  );
+}
+
+function Dashboard({stats, transactions, exceptions, reconciliation}) {
+  const recentTxns = transactions.slice(-5).reverse();
+  const openExc = exceptions.filter(e => e.status==='Open'||e.status==='Under Investigation').slice(0,5);
+  return (
+    <div>
+      {stats.personalTickets > 0 && (
+        <div className="alert-danger alert-box">⚠️ <strong>ALERT:</strong> {stats.personalTickets} personal ticket(s) detected worth {fmt(stats.personalValue)}. Immediate investigation required.</div>
+      )}
+      {Math.abs(stats.totalVariance) > 0 && (
+        <div className="alert-warning alert-box">⚠️ Total portal variance detected: {fmt(stats.totalVariance)}. Review Daily Reconciliation.</div>
+      )}
+
+      <div className="stats-grid">
+        <div className="stat-card"><div className="label">Total Tickets Today</div><div className="value">{fmtInt(stats.totalTickets)}</div></div>
+        <div className="stat-card"><div className="label">Total Ticket Value</div><div className="value">{fmt(stats.totalValue)}</div></div>
+        <div className="stat-card"><div className="label">Funds Loaded Today</div><div className="value">{fmt(stats.totalFundsLoaded)}</div></div>
+        <div className="stat-card"><div className="label">Portals Used</div><div className="value">{stats.portalCount}</div></div>
+        <div className="stat-card danger"><div className="label">Personal Tickets</div><div className="value">{stats.personalTickets}</div></div>
+        <div className="stat-card danger"><div className="label">Personal Ticket Value</div><div className="value">{fmt(stats.personalValue)}</div></div>
+        <div className="stat-card warning"><div className="label">Open Exceptions</div><div className="value">{stats.openExceptions}</div></div>
+        <div className="stat-card" style={{borderLeftColor: Math.abs(stats.totalVariance)>0?'#dc3545':'#10b981'}}><div className="label">Total Variance</div><div className="value" style={{color:Math.abs(stats.totalVariance)>0?'#dc3545':'#10b981'}}>{fmt(stats.totalVariance)}</div></div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'20px'}}>
+        <div className="card">
+          <div className="card-title"><span className="icon">🎫</span> Recent Transactions</div>
+          {recentTxns.length === 0 ? <div className="empty-state">No transactions yet. Start logging tickets!</div> :
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Time</th><th>Staff</th><th>Portal</th><th>Passenger</th><th>Amount</th><th>Source</th></tr></thead>
+              <tbody>
+                {recentTxns.map(t => (
+                  <tr key={t.id} className={t.bookingSource==='Personal'?'highlight-row':''}>
+                    <td>{t.time}</td><td>{t.staff}</td><td>{t.portal}</td><td>{t.passenger}</td>
+                    <td style={{fontWeight:600}}>{fmt(t.totalAmt)}</td>
+                    <td>{t.bookingSource==='Personal'?<span className="badge badge-personal">PERSONAL</span>:t.bookingSource}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>}
+        </div>
+
+        <div className="card">
+          <div className="card-title"><span className="icon">🚨</span> Open Exceptions</div>
+          {openExc.length === 0 ? <div className="empty-state" style={{color:'var(--success)'}}>✅ No open exceptions</div> :
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Type</th><th>Staff</th><th>Amount</th><th>Severity</th><th>Status</th></tr></thead>
+              <tbody>
+                {openExc.map(e => (
+                  <tr key={e.id}>
+                    <td>{e.type}</td><td>{e.staff}</td><td>{fmt(e.amount)}</td>
+                    <td><span className={`badge badge-${e.severity.toLowerCase()}`}>{e.severity}</span></td>
+                    <td>{e.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>}
+        </div>
+      </div>
+
+      <div className="card" style={{marginTop:20}}>
+        <div className="card-title"><span className="icon">📊</span> Portal-wise Ticket Distribution</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:'12px'}}>
+          {PORTALS.map(p => {
+            const portalTxns = transactions.filter(t=>t.portal===p);
+            const total = portalTxns.reduce((s,t)=>s+(Number(t.totalAmt)||0),0);
+            const maxVal = Math.max(...PORTALS.map(pp=>transactions.filter(t=>t.portal===pp).reduce((s,t)=>s+(Number(t.totalAmt)||0),0)),1);
+            return (
+              <div key={p} style={{padding:'10px 14px',background:'#f8faff',borderRadius:6,border:'1px solid #e8edf5'}}>
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:13}}>
+                  <strong>{p}</strong><span>{portalTxns.length} tickets</span>
+                </div>
+                <div style={{fontSize:15,fontWeight:700,color:'var(--primary)',margin:'4px 0'}}>{fmt(total)}</div>
+                <div className="progress-bar"><div className="fill" style={{width:`${(total/maxVal)*100}%`,background:'var(--primary-light)'}}></div></div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TransactionLog({transactions, setTransactions, showModal, setShowModal}) {
+  const [search, setSearch] = useState('');
+  const [filterPortal, setFilterPortal] = useState('');
+  const [filterStaff, setFilterStaff] = useState('');
+  const [filterSource, setFilterSource] = useState('');
+
+  const filtered = transactions.filter(t => {
+    if (search && !Object.values(t).some(v => String(v).toLowerCase().includes(search.toLowerCase()))) return false;
+    if (filterPortal && t.portal !== filterPortal) return false;
+    if (filterStaff && t.staff !== filterStaff) return false;
+    if (filterSource && t.bookingSource !== filterSource) return false;
+    return true;
+  });
+
+  const totalValue = filtered.reduce((s,t) => s + (Number(t.totalAmt)||0), 0);
+  const totalCollected = filtered.reduce((s,t) => s + (Number(t.amtCollected)||0), 0);
+  const totalProfit = filtered.reduce((s,t) => s + ((Number(t.amtCollected)||0) - (Number(t.totalAmt)||0) + (Number(t.serviceFee)||0)), 0);
+
+  const exportCSV = () => {
+    const headers = ['Sr No','Date','Time','Staff','Portal','PNR','Passenger','Phone','Sector','Travel Date','Type','Source','Base Fare','Taxes','Total','Service Fee','Collected','Payment Mode','Invoice No','Profit/Loss','Remarks','Verified'];
+    const rows = filtered.map((t,i) => [i+1,t.date,t.time,t.staff,t.portal,t.pnr,t.passenger,t.phone,t.sector,t.travelDate,t.ticketType,t.bookingSource,t.baseFare,t.taxes,t.totalAmt,t.serviceFee,t.amtCollected,t.paymentMode,t.invoiceNo,((Number(t.amtCollected)||0)-(Number(t.totalAmt)||0)+(Number(t.serviceFee)||0)).toFixed(2),t.remarks,t.verified]);
+    const csv = [headers,...rows].map(r => r.map(c => `"${c||''}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Transaction_Log_${today()}.csv`; a.click();
+  };
+
+  const deleteTransaction = (id) => {
+    if (confirm('Delete this transaction?')) setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  return (
+    <div>
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div className="card-title" style={{margin:0}}><span className="icon">🎫</span> Daily Ticket Issuance Log</div>
+          <div className="btn-group" style={{margin:0}}>
+            <button className="btn btn-primary" onClick={()=>setShowModal('addTransaction')}>+ Add Ticket</button>
+            <button className="btn btn-outline" onClick={exportCSV}>📥 Export CSV</button>
+          </div>
+        </div>
+
+        <div className="alert-info alert-box">ℹ️ Staff must log EVERY ticket here BEFORE issuing on the portal. Personal tickets are auto-flagged.</div>
+
+        <div className="filter-row">
+          <input className="search-box" placeholder="🔍 Search PNR, passenger, remarks..." value={search} onChange={e=>setSearch(e.target.value)} />
+          <select style={{padding:'8px 12px',borderRadius:6,border:'1px solid var(--border)'}} value={filterPortal} onChange={e=>setFilterPortal(e.target.value)}>
+            <option value="">All Portals</option>
+            {PORTALS.map(p=><option key={p}>{p}</option>)}
+          </select>
+          <select style={{padding:'8px 12px',borderRadius:6,border:'1px solid var(--border)'}} value={filterStaff} onChange={e=>setFilterStaff(e.target.value)}>
+            <option value="">All Staff</option>
+            {STAFF.map(s=><option key={s}>{s}</option>)}
+          </select>
+          <select style={{padding:'8px 12px',borderRadius:6,border:'1px solid var(--border)'}} value={filterSource} onChange={e=>setFilterSource(e.target.value)}>
+            <option value="">All Sources</option>
+            {BOOKING_SOURCES.map(s=><option key={s}>{s}</option>)}
+          </select>
+        </div>
+
+        <div className="stats-grid" style={{gridTemplateColumns:'repeat(4,1fr)'}}>
+          <div className="stat-card"><div className="label">Filtered Tickets</div><div className="value">{filtered.length}</div></div>
+          <div className="stat-card"><div className="label">Total Ticket Value</div><div className="value" style={{fontSize:18}}>{fmt(totalValue)}</div></div>
+          <div className="stat-card"><div className="label">Total Collected</div><div className="value" style={{fontSize:18}}>{fmt(totalCollected)}</div></div>
+          <div className="stat-card" style={{borderLeftColor:totalProfit>=0?'var(--success)':'var(--danger)'}}><div className="label">Net Profit/Loss</div><div className="value" style={{fontSize:18,color:totalProfit>=0?'var(--success)':'var(--danger)'}}>{fmt(totalProfit)}</div></div>
+        </div>
+
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Date</th><th>Time</th><th>Staff</th><th>Portal</th><th>PNR</th>
+                <th>Passenger</th><th>Sector</th><th>Travel Date</th><th>Type</th><th>Source</th>
+                <th>Base Fare</th><th>Taxes</th><th>Total</th><th>Collected</th><th>Profit/Loss</th>
+                <th>Verified</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan="18" style={{textAlign:'center',padding:'30px',color:'var(--text-light)'}}>No transactions recorded yet. Click "+ Add Ticket" to start.</td></tr>
+              ) : filtered.map((t, i) => {
+                const profit = (Number(t.amtCollected)||0) - (Number(t.totalAmt)||0) + (Number(t.serviceFee)||0);
+                return (
+                  <tr key={t.id} className={t.bookingSource==='Personal'?'highlight-row':''}>
+                    <td>{i+1}</td><td>{t.date}</td><td>{t.time}</td><td>{t.staff}</td><td>{t.portal}</td><td style={{fontFamily:'monospace'}}>{t.pnr}</td>
+                    <td>{t.passenger}</td><td>{t.sector}</td><td>{t.travelDate}</td><td>{t.ticketType}</td>
+                    <td>{t.bookingSource==='Personal'?<span className="badge badge-personal">PERSONAL</span>:t.bookingSource}</td>
+                    <td>{fmt(t.baseFare)}</td><td>{fmt(t.taxes)}</td><td style={{fontWeight:700}}>{fmt(t.totalAmt)}</td>
+                    <td>{fmt(t.amtCollected)}</td>
+                    <td style={{fontWeight:700,color:profit>=0?'var(--success)':'var(--danger)'}}>{fmt(profit)}</td>
+                    <td>{t.verified === 'Yes' ? <span className="badge badge-ok">✓</span> : <span className="badge badge-warning">Pending</span>}</td>
+                    <td><button className="btn btn-danger btn-sm" onClick={()=>deleteTransaction(t.id)}>✕</button></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddTransactionModal({onClose, onSave}) {
+  const [form, setForm] = useState({date:today(),time:now(),staff:'',portal:'',pnr:'',passenger:'',phone:'',sector:'',travelDate:'',ticketType:'One-Way',bookingSource:'Walk-in',baseFare:'',taxes:'',serviceFee:'0',amtCollected:'',paymentMode:'Cash',invoiceNo:'',remarks:'',verified:'No'});
+  const set = (k,v) => setForm(prev=>({...prev,[k]:v}));
+  const totalAmt = (Number(form.baseFare)||0) + (Number(form.taxes)||0);
+  const save = () => {
+    if (!form.staff||!form.portal||!form.pnr||!form.passenger) { alert('Please fill Staff, Portal, PNR, and Passenger name'); return; }
+    onSave({...form, totalAmt: totalAmt.toFixed(2)});
+  };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">🎫 Add New Ticket Entry <button className="modal-close" onClick={onClose}>×</button></div>
+        {form.bookingSource==='Personal' && <div className="alert-danger alert-box">⚠️ PERSONAL TICKET — This will be flagged for investigation</div>}
+        <div className="form-grid">
+          <div className="form-group"><label>Date *</label><input type="date" value={form.date} onChange={e=>set('date',e.target.value)} /></div>
+          <div className="form-group"><label>Time *</label><input type="time" value={form.time} onChange={e=>set('time',e.target.value)} /></div>
+          <div className="form-group"><label>Staff Name *</label><select value={form.staff} onChange={e=>set('staff',e.target.value)}><option value="">-- Select --</option>{STAFF.map(s=><option key={s}>{s}</option>)}</select></div>
+          <div className="form-group"><label>Portal *</label><select value={form.portal} onChange={e=>set('portal',e.target.value)}><option value="">-- Select --</option>{PORTALS.map(p=><option key={p}>{p}</option>)}</select></div>
+          <div className="form-group"><label>PNR / Booking Ref *</label><input value={form.pnr} onChange={e=>set('pnr',e.target.value.toUpperCase())} placeholder="e.g. ABC123" /></div>
+          <div className="form-group"><label>Passenger Name *</label><input value={form.passenger} onChange={e=>set('passenger',e.target.value)} placeholder="Full name" /></div>
+          <div className="form-group"><label>Phone</label><input value={form.phone} onChange={e=>set('phone',e.target.value)} placeholder="Mobile number" /></div>
+          <div className="form-group"><label>Sector (From-To)</label><input value={form.sector} onChange={e=>set('sector',e.target.value)} placeholder="e.g. DEL-BOM" /></div>
+          <div className="form-group"><label>Travel Date</label><input type="date" value={form.travelDate} onChange={e=>set('travelDate',e.target.value)} /></div>
+          <div className="form-group"><label>Ticket Type</label><select value={form.ticketType} onChange={e=>set('ticketType',e.target.value)}>{TICKET_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+          <div className="form-group"><label>Booking Source</label><select value={form.bookingSource} onChange={e=>set('bookingSource',e.target.value)} style={form.bookingSource==='Personal'?{borderColor:'red',background:'#fff5f5'}:{}}>{BOOKING_SOURCES.map(s=><option key={s}>{s}</option>)}</select></div>
+          <div className="form-group"><label>Base Fare (₹)</label><input type="number" value={form.baseFare} onChange={e=>set('baseFare',e.target.value)} placeholder="0.00" /></div>
+          <div className="form-group"><label>Taxes (₹)</label><input type="number" value={form.taxes} onChange={e=>set('taxes',e.target.value)} placeholder="0.00" /></div>
+          <div className="form-group"><label>Total Amount (₹)</label><input type="text" value={fmt(totalAmt)} readOnly style={{background:'#f0f4ff',fontWeight:700}} /></div>
+          <div className="form-group"><label>Service Fee (₹)</label><input type="number" value={form.serviceFee} onChange={e=>set('serviceFee',e.target.value)} placeholder="0.00" /></div>
+          <div className="form-group"><label>Amt Collected (₹)</label><input type="number" value={form.amtCollected} onChange={e=>set('amtCollected',e.target.value)} placeholder="0.00" /></div>
+          <div className="form-group"><label>Payment Mode</label><select value={form.paymentMode} onChange={e=>set('paymentMode',e.target.value)}>{PAYMENT_MODES.map(p=><option key={p}>{p}</option>)}</select></div>
+          <div className="form-group"><label>Invoice No</label><input value={form.invoiceNo} onChange={e=>set('invoiceNo',e.target.value)} placeholder="Customer invoice #" /></div>
+          <div className="form-group"><label>Verified by Supervisor</label><select value={form.verified} onChange={e=>set('verified',e.target.value)}><option>No</option><option>Yes</option><option>Pending</option></select></div>
+        </div>
+        <div className="form-group" style={{marginBottom:16}}><label>Remarks</label><textarea value={form.remarks} onChange={e=>set('remarks',e.target.value)} placeholder="Any additional notes..." rows="2" style={{padding:'8px 12px',border:'1px solid var(--border)',borderRadius:6,fontSize:14}} /></div>
+        <div className="btn-group">
+          <button className="btn btn-primary" onClick={save}>✓ Save Ticket Entry</button>
+          <button className="btn btn-outline" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FundLoading({fundLoads, setFundLoads, showModal, setShowModal}) {
+  const totalLoaded = fundLoads.reduce((s,f)=>s+(Number(f.amount)||0),0);
+  const byPortal = PORTALS.map(p => ({name:p, total:fundLoads.filter(f=>f.portal===p).reduce((s,f)=>s+(Number(f.amount)||0),0)})).filter(p=>p.total>0);
+
+  const exportCSV = () => {
+    const headers = ['Sr No','Date','Portal','Amount','Method','Bank/Card','UTR/Ref','Loaded By','Balance Before','Balance After','Proof','Approved By','Remarks'];
+    const rows = fundLoads.map((f,i) => [i+1,f.date,f.portal,f.amount,f.method,f.bank,f.utr,f.loadedBy,f.balBefore,f.balAfter,f.proof,f.approvedBy,f.remarks]);
+    const csv = [headers,...rows].map(r => r.map(c => `"${c||''}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Fund_Loading_${today()}.csv`; a.click();
+  };
+
+  return (
+    <div>
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div className="card-title" style={{margin:0}}><span className="icon">💰</span> Fund Loading / Deposit Register</div>
+          <div className="btn-group" style={{margin:0}}>
+            <button className="btn btn-primary" onClick={()=>setShowModal('addFundLoad')}>+ Add Fund Load</button>
+            <button className="btn btn-outline" onClick={exportCSV}>📥 Export CSV</button>
+          </div>
+        </div>
+
+        <div className="stats-grid" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
+          <div className="stat-card"><div className="label">Total Funds Loaded</div><div className="value" style={{fontSize:20}}>{fmt(totalLoaded)}</div></div>
+          <div className="stat-card"><div className="label">Total Transactions</div><div className="value">{fundLoads.length}</div></div>
+          <div className="stat-card" style={{borderLeftColor:fundLoads.filter(f=>f.proof!=='Yes').length>0?'var(--danger)':'var(--success)'}}>
+            <div className="label">Without Bank Proof</div><div className="value" style={{color:fundLoads.filter(f=>f.proof!=='Yes').length>0?'var(--danger)':'var(--success)'}}>{fundLoads.filter(f=>f.proof!=='Yes').length}</div>
+          </div>
+        </div>
+
+        {byPortal.length > 0 && (
+          <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:16}}>
+            {byPortal.map(p => (
+              <div key={p.name} style={{padding:'8px 14px',background:'#f0f4ff',borderRadius:6,fontSize:13}}>
+                <strong>{p.name}:</strong> {fmt(p.total)}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Date</th><th>Portal</th><th>Amount (₹)</th><th>Method</th><th>Bank/Card</th><th>UTR/Ref</th><th>Loaded By</th><th>Bal Before</th><th>Bal After</th><th>Proof</th><th>Approved By</th></tr>
+            </thead>
+            <tbody>
+              {fundLoads.length === 0 ? (
+                <tr><td colSpan="12" style={{textAlign:'center',padding:30,color:'var(--text-light)'}}>No fund loads recorded. Click "+ Add Fund Load" to start.</td></tr>
+              ) : fundLoads.map((f, i) => (
+                <tr key={f.id}>
+                  <td>{i+1}</td><td>{f.date}</td><td>{f.portal}</td><td style={{fontWeight:700}}>{fmt(f.amount)}</td>
+                  <td>{f.method}</td><td>{f.bank}</td><td style={{fontFamily:'monospace'}}>{f.utr}</td><td>{f.loadedBy}</td>
+                  <td>{fmt(f.balBefore)}</td><td>{fmt(f.balAfter)}</td>
+                  <td>{f.proof==='Yes'?<span className="badge badge-ok">✓</span>:<span className="badge badge-investigate">NO</span>}</td>
+                  <td>{f.approvedBy}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddFundLoadModal({onClose, onSave}) {
+  const [form, setForm] = useState({date:today(),portal:'',amount:'',method:'NEFT',bank:'',utr:'',loadedBy:'',balBefore:'',balAfter:'',proof:'Yes',approvedBy:'',remarks:''});
+  const set = (k,v) => setForm(prev=>({...prev,[k]:v}));
+  const save = () => {
+    if (!form.portal||!form.amount||!form.utr) { alert('Please fill Portal, Amount, and UTR/Reference'); return; }
+    onSave(form);
+  };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">💰 Add Fund Load Entry <button className="modal-close" onClick={onClose}>×</button></div>
+        <div className="form-grid">
+          <div className="form-group"><label>Date *</label><input type="date" value={form.date} onChange={e=>set('date',e.target.value)} /></div>
+          <div className="form-group"><label>Portal *</label><select value={form.portal} onChange={e=>set('portal',e.target.value)}><option value="">-- Select --</option>{PORTALS.map(p=><option key={p}>{p}</option>)}</select></div>
+          <div className="form-group"><label>Amount (₹) *</label><input type="number" value={form.amount} onChange={e=>set('amount',e.target.value)} placeholder="0.00" /></div>
+          <div className="form-group"><label>Loading Method</label><select value={form.method} onChange={e=>set('method',e.target.value)}>{FUND_METHODS.map(m=><option key={m}>{m}</option>)}</select></div>
+          <div className="form-group"><label>Bank/Card Used</label><input value={form.bank} onChange={e=>set('bank',e.target.value)} placeholder="Bank name or card last 4" /></div>
+          <div className="form-group"><label>UTR / Ref No *</label><input value={form.utr} onChange={e=>set('utr',e.target.value.toUpperCase())} placeholder="Transaction reference" /></div>
+          <div className="form-group"><label>Loaded By</label><select value={form.loadedBy} onChange={e=>set('loadedBy',e.target.value)}><option value="">-- Select --</option>{STAFF.map(s=><option key={s}>{s}</option>)}</select></div>
+          <div className="form-group"><label>Portal Bal Before (₹)</label><input type="number" value={form.balBefore} onChange={e=>set('balBefore',e.target.value)} placeholder="0.00" /></div>
+          <div className="form-group"><label>Portal Bal After (₹)</label><input type="number" value={form.balAfter} onChange={e=>set('balAfter',e.target.value)} placeholder="0.00" /></div>
+          <div className="form-group"><label>Bank Proof Attached</label><select value={form.proof} onChange={e=>set('proof',e.target.value)}><option>Yes</option><option>No</option><option>Pending</option></select></div>
+          <div className="form-group"><label>Approved By</label><input value={form.approvedBy} onChange={e=>set('approvedBy',e.target.value)} placeholder="Supervisor name" /></div>
+        </div>
+        <div className="btn-group">
+          <button className="btn btn-primary" onClick={save}>✓ Save Fund Load</button>
+          <button className="btn btn-outline" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Reconciliation({reconciliation, setReconciliation, reconDate, setReconDate}) {
+  const update = (portal, field, value) => {
+    setReconciliation(prev => ({...prev, [portal]: {...prev[portal], [field]: Number(value)||0}}));
+  };
+
+  const totals = PORTALS.reduce((acc, p) => {
+    const r = reconciliation[p];
+    const avail = (r.opening||0) + (r.fundsLoaded||0);
+    const calcClosing = avail - (r.ticketValue||0) + (r.refunds||0) - (r.charges||0);
+    const variance = (r.closingPortal||0) - calcClosing;
+    acc.opening += r.opening||0; acc.fundsLoaded += r.fundsLoaded||0; acc.ticketCount += r.ticketCount||0;
+    acc.ticketValue += r.ticketValue||0; acc.refunds += r.refunds||0; acc.charges += r.charges||0;
+    acc.calcClosing += calcClosing; acc.closingPortal += r.closingPortal||0; acc.variance += variance;
+    return acc;
+  }, {opening:0,fundsLoaded:0,ticketCount:0,ticketValue:0,refunds:0,charges:0,calcClosing:0,closingPortal:0,variance:0});
+
+  return (
+    <div>
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div className="card-title" style={{margin:0}}><span className="icon">📋</span> Daily Portal-wise Reconciliation</div>
+          <div className="form-group" style={{flexDirection:'row',alignItems:'center',gap:8}}>
+            <label style={{margin:0}}>Date:</label>
+            <input type="date" value={reconDate} onChange={e=>setReconDate(e.target.value)} style={{padding:'6px 10px',border:'1px solid var(--border)',borderRadius:6}} />
+          </div>
+        </div>
+
+        <div className="alert-info alert-box">ℹ️ Enter values in YELLOW cells. Blue cells auto-calculate. Variance > 2% triggers "INVESTIGATE" status.</div>
+
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Portal</th><th>Opening Bal (₹)</th><th>Funds Loaded (₹)</th><th>Total Available (₹)</th>
+                <th>Tickets (#)</th><th>Ticket Value (₹)</th><th>Refunds (₹)</th><th>Charges (₹)</th>
+                <th>Closing (Calc)</th><th>Closing (Portal)</th><th>Variance (₹)</th><th>Variance %</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PORTALS.map(p => {
+                const r = reconciliation[p];
+                const available = (r.opening||0) + (r.fundsLoaded||0);
+                const calcClosing = available - (r.ticketValue||0) + (r.refunds||0) - (r.charges||0);
+                const variance = (r.closingPortal||0) - calcClosing;
+                const variancePct = available > 0 ? (variance / available) * 100 : 0;
+                const status = Math.abs(variancePct) <= 2 ? 'OK' : 'INVESTIGATE';
+                return (
+                  <tr key={p}>
+                    <td style={{fontWeight:600}}>{p}</td>
+                    <td><input type="number" value={r.opening||''} onChange={e=>update(p,'opening',e.target.value)} style={{width:100,padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,background:'#FFF9E6',textAlign:'right'}} /></td>
+                    <td><input type="number" value={r.fundsLoaded||''} onChange={e=>update(p,'fundsLoaded',e.target.value)} style={{width:100,padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,background:'#FFF9E6',textAlign:'right'}} /></td>
+                    <td style={{fontWeight:600,background:'#f0f4ff'}}>{fmt(available)}</td>
+                    <td><input type="number" value={r.ticketCount||''} onChange={e=>update(p,'ticketCount',e.target.value)} style={{width:60,padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,background:'#FFF9E6',textAlign:'right'}} /></td>
+                    <td><input type="number" value={r.ticketValue||''} onChange={e=>update(p,'ticketValue',e.target.value)} style={{width:110,padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,background:'#FFF9E6',textAlign:'right'}} /></td>
+                    <td><input type="number" value={r.refunds||''} onChange={e=>update(p,'refunds',e.target.value)} style={{width:90,padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,background:'#FFF9E6',textAlign:'right'}} /></td>
+                    <td><input type="number" value={r.charges||''} onChange={e=>update(p,'charges',e.target.value)} style={{width:90,padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,background:'#FFF9E6',textAlign:'right'}} /></td>
+                    <td style={{fontWeight:600,background:'#f0f4ff'}}>{fmt(calcClosing)}</td>
+                    <td><input type="number" value={r.closingPortal||''} onChange={e=>update(p,'closingPortal',e.target.value)} style={{width:110,padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,background:'#FFF9E6',textAlign:'right'}} /></td>
+                    <td style={{fontWeight:700,color:Math.abs(variance)>0?'var(--danger)':'var(--success)'}}>{fmt(variance)}</td>
+                    <td style={{color:Math.abs(variancePct)>2?'var(--danger)':'inherit'}}>{variancePct.toFixed(2)}%</td>
+                    <td><span className={`badge ${status==='OK'?'badge-ok':'badge-investigate'}`}>{status}</span></td>
+                  </tr>
+                );
+              })}
+              <tr style={{background:'var(--accent)',fontWeight:700}}>
+                <td>TOTAL</td>
+                <td>{fmt(totals.opening)}</td><td>{fmt(totals.fundsLoaded)}</td><td>{fmt(totals.opening+totals.fundsLoaded)}</td>
+                <td>{totals.ticketCount}</td><td>{fmt(totals.ticketValue)}</td><td>{fmt(totals.refunds)}</td><td>{fmt(totals.charges)}</td>
+                <td>{fmt(totals.calcClosing)}</td><td>{fmt(totals.closingPortal)}</td>
+                <td style={{color:Math.abs(totals.variance)>0?'var(--danger)':'var(--success)'}}>{fmt(totals.variance)}</td>
+                <td colSpan="2"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StaffTracker({transactions}) {
+  const staffData = STAFF.map(s => {
+    const txns = transactions.filter(t => t.staff === s);
+    const personal = txns.filter(t => t.bookingSource === 'Personal');
+    const totalValue = txns.reduce((sum,t) => sum + (Number(t.totalAmt)||0), 0);
+    const personalValue = personal.reduce((sum,t) => sum + (Number(t.totalAmt)||0), 0);
+    const highValue = txns.filter(t => Number(t.totalAmt) > 50000);
+    const verified = txns.filter(t => t.verified === 'Yes').length;
+    const avgTicket = txns.length > 0 ? totalValue / txns.length : 0;
+    const maxTicket = txns.length > 0 ? Math.max(...txns.map(t => Number(t.totalAmt)||0)) : 0;
+    const portalsUsed = [...new Set(txns.map(t => t.portal))];
+    const flags = [];
+    if (personal.length > 0) flags.push('🔴 PERSONAL TICKETS');
+    if (highValue.length > 0) flags.push('🟡 HIGH VALUE');
+    if (verified < txns.length && txns.length > 0) flags.push('🟠 UNVERIFIED');
+    return {name:s, total:txns.length, totalValue, personal:personal.length, personalValue, avgTicket, maxTicket, portalsUsed, verified, totalTxns:txns.length, highValue:highValue.length, flags};
+  });
+
+  return (
+    <div>
+      <div className="card">
+        <div className="card-title"><span className="icon">👥</span> Staff-wise Activity & Accountability Tracker</div>
+
+        {staffData.filter(s=>s.personal>0).length > 0 && (
+          <div className="alert-danger alert-box">⚠️ PERSONAL TICKETS DETECTED for: {staffData.filter(s=>s.personal>0).map(s=>s.name).join(', ')}</div>
+        )}
+
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Staff</th><th>Total Tickets</th><th>Total Value</th><th>Personal Tkts</th><th>Personal Value</th><th>Avg Ticket</th><th>Max Ticket</th><th>High Value</th><th>Verified</th><th>Portals Used</th><th>Red Flags</th></tr>
+            </thead>
+            <tbody>
+              {staffData.map(s => (
+                <tr key={s.name} className={s.personal>0?'highlight-row':''}>
+                  <td style={{fontWeight:600}}>{s.name}</td>
+                  <td>{s.total}</td>
+                  <td style={{fontWeight:600}}>{fmt(s.totalValue)}</td>
+                  <td style={{color:s.personal>0?'var(--danger)':'inherit',fontWeight:s.personal>0?700:400}}>{s.personal}</td>
+                  <td style={{color:s.personalValue>0?'var(--danger)':'inherit',fontWeight:s.personalValue>0?700:400}}>{fmt(s.personalValue)}</td>
+                  <td>{fmt(s.avgTicket)}</td>
+                  <td>{fmt(s.maxTicket)}</td>
+                  <td>{s.highValue}</td>
+                  <td>{s.totalTxns > 0 ? `${s.verified}/${s.totalTxns}` : '-'}</td>
+                  <td>{s.portalsUsed.length > 0 ? s.portalsUsed.length : '-'}</td>
+                  <td>{s.flags.length > 0 ? s.flags.map((f,i) => <div key={i} style={{fontSize:11,fontWeight:700}}>{f}</div>) : <span className="badge badge-ok">CLEAR</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExceptionReport({exceptions, setExceptions}) {
+  const [filter, setFilter] = useState('all');
+  const filtered = filter === 'all' ? exceptions : exceptions.filter(e => e.status === filter);
+  const updateException = (id, field, value) => {
+    setExceptions(prev => prev.map(e => e.id === id ? {...e, [field]: value} : e));
+  };
+  return (
+    <div>
+      <div className="card">
+        <div className="card-title"><span className="icon">🚨</span> Exception & Red Flag Report</div>
+
+        <div className="stats-grid" style={{gridTemplateColumns:'repeat(5,1fr)'}}>
+          <div className="stat-card danger"><div className="label">Critical</div><div className="value">{exceptions.filter(e=>e.severity==='Critical').length}</div></div>
+          <div className="stat-card" style={{borderLeftColor:'#ef4444'}}><div className="label">High</div><div className="value" style={{color:'#ef4444'}}>{exceptions.filter(e=>e.severity==='High').length}</div></div>
+          <div className="stat-card warning"><div className="label">Medium</div><div className="value">{exceptions.filter(e=>e.severity==='Medium').length}</div></div>
+          <div className="stat-card success"><div className="label">Resolved</div><div className="value">{exceptions.filter(e=>e.status==='Resolved'||e.status==='Closed').length}</div></div>
+          <div className="stat-card"><div className="label">Open</div><div className="value">{exceptions.filter(e=>e.status==='Open'||e.status==='Under Investigation').length}</div></div>
+        </div>
+
+        <div className="tabs-mini">
+          {['all','Open','Under Investigation','Resolved','Escalated','Closed'].map(s => (
+            <button key={s} className={filter===s?'active':''} onClick={()=>setFilter(s)}>{s === 'all' ? 'All' : s}</button>
+          ))}
+        </div>
+
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Date</th><th>Type</th><th>Staff</th><th>Portal</th><th>PNR</th><th>Amount</th><th>Severity</th><th>Status</th><th>Resolution</th></tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan="10" style={{textAlign:'center',padding:30,color:'var(--text-light)'}}>No exceptions to show.</td></tr>
+              ) : filtered.map((e, i) => (
+                <tr key={e.id} className={e.severity==='Critical'||e.severity==='High'?'highlight-row':''}>
+                  <td>{i+1}</td><td>{e.date}</td><td>{e.type}</td><td>{e.staff}</td><td>{e.portal}</td><td style={{fontFamily:'monospace'}}>{e.pnr}</td>
+                  <td style={{fontWeight:600}}>{fmt(e.amount)}</td>
+                  <td><span className={`badge badge-${e.severity.toLowerCase()}`}>{e.severity}</span></td>
+                  <td>
+                    <select value={e.status} onChange={ev=>updateException(e.id,'status',ev.target.value)} style={{padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,fontSize:12}}>
+                      {INV_STATUS.map(s=><option key={s}>{s}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    <input value={e.resolution} onChange={ev=>updateException(e.id,'resolution',ev.target.value)} placeholder="Enter resolution..." style={{padding:'4px 8px',border:'1px solid #ddd',borderRadius:4,fontSize:12,width:150}} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PortalBalances({reconciliation}) {
+  return (
+    <div>
+      <div className="card">
+        <div className="card-title"><span className="icon">🏦</span> Portal Balance Overview</div>
+        <div className="portal-balance-grid">
+          {PORTALS.map(p => {
+            const r = reconciliation[p];
+            const available = (r.opening||0) + (r.fundsLoaded||0);
+            const used = (r.ticketValue||0);
+            const remaining = available - used + (r.refunds||0) - (r.charges||0);
+            const usagePct = available > 0 ? (used/available)*100 : 0;
+            return (
+              <div key={p} className="portal-balance-card">
+                <div className="portal-name">{p}</div>
+                <div className="balance-row"><span>Opening Balance</span><span style={{fontWeight:600}}>{fmt(r.opening)}</span></div>
+                <div className="balance-row"><span>Funds Loaded</span><span style={{fontWeight:600,color:'var(--success)'}}>+{fmt(r.fundsLoaded)}</span></div>
+                <div className="balance-row"><span>Total Available</span><span style={{fontWeight:700}}>{fmt(available)}</span></div>
+                <div className="balance-row"><span>Tickets Issued ({r.ticketCount||0})</span><span style={{fontWeight:600,color:'var(--danger)'}}>-{fmt(used)}</span></div>
+                <div className="balance-row" style={{borderTop:'1px solid #eee',paddingTop:6,marginTop:4}}>
+                  <span style={{fontWeight:700}}>Calculated Balance</span><span style={{fontWeight:700,color:'var(--primary)'}}>{fmt(remaining)}</span>
+                </div>
+                <div className="balance-row"><span>Portal Balance</span><span style={{fontWeight:600}}>{fmt(r.closingPortal)}</span></div>
+                {(r.closingPortal||0) !== 0 && Math.abs((r.closingPortal||0) - remaining) > 0.01 && (
+                  <div style={{marginTop:6,padding:'4px 8px',background:'#fee2e2',borderRadius:4,fontSize:11,color:'#991b1b',fontWeight:600}}>
+                    ⚠️ Variance: {fmt((r.closingPortal||0) - remaining)}
+                  </div>
+                )}
+                <div className="progress-bar" style={{marginTop:8}}>
+                  <div className="fill" style={{width:`${Math.min(usagePct,100)}%`,background:usagePct>90?'var(--danger)':usagePct>70?'var(--warning)':'var(--success)'}}></div>
+                </div>
+                <div style={{fontSize:11,color:'var(--text-light)',marginTop:4}}>{usagePct.toFixed(1)}% utilized</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SOPControls() {
+  const sections = [
+    {title: '1. Daily Mandatory Procedures', icon: '📋', items: [
+      {id:'1.1',text:'Every staff MUST log ticket in Daily Transaction Log BEFORE issuing on portal',who:'All Staff'},
+      {id:'1.2',text:'Record staff name, time, passenger details, PNR, and amount for EVERY ticket',who:'All Staff'},
+      {id:'1.3',text:'All fund loads must be recorded in Fund Loading Register with UTR/reference number',who:'Authorized Staff'},
+      {id:'1.4',text:'End of day: Each staff submits their daily ticket count and total to supervisor',who:'All Staff'},
+      {id:'1.5',text:'Supervisor cross-checks Transaction Log entries against portal transaction history',who:'Supervisor'},
+      {id:'1.6',text:'Complete Daily Reconciliation comparing calculated vs actual portal balances',who:'Supervisor/Owner'},
+      {id:'1.7',text:'Any variance > 2% must be investigated immediately and logged in Exception Report',who:'Supervisor/Owner'},
+    ]},
+    {title: '2. Controls for Shared Login Environment', icon: '🔐', items: [
+      {id:'2.1',text:'MANDATORY SIGN-IN/SIGN-OUT LOG: Physical register where staff sign when using a portal',who:'Immediate'},
+      {id:'2.2',text:'SCREEN RECORDING: Install screen recording software on all booking terminals',who:'Week 1'},
+      {id:'2.3',text:'IP/DEVICE TRACKING: Assign specific computers to specific staff for portal access',who:'Week 1'},
+      {id:'2.4',text:'TIME-BASED ACCESS: Restrict portal access to staff shift hours only',who:'Week 2'},
+      {id:'2.5',text:'TWO-PERSON RULE: Tickets above ₹50,000 require supervisor co-authorization',who:'Immediate'},
+      {id:'2.6',text:'DAILY SCREENSHOT: Staff must screenshot portal transaction history at end of shift',who:'Immediate'},
+      {id:'2.7',text:'Request individual sub-logins from portals that support them (IndiGo B2B, Amadeus, etc.)',who:'Week 2-4'},
+    ]},
+    {title: '3. Personal Ticket Prevention', icon: '🚫', items: [
+      {id:'3.1',text:'ALL tickets must have a corresponding customer invoice number',who:'Immediate'},
+      {id:'3.2',text:'Random spot-checks: Verify 10% of daily tickets against customer records',who:'Daily'},
+      {id:'3.3',text:'Any booking with staff/family member name auto-flagged as RED in Exception Report',who:'Immediate'},
+      {id:'3.4',text:'Booking Source = "Personal" triggers immediate supervisor alert in this system',who:'Automatic'},
+      {id:'3.5',text:'Monthly audit: Cross-reference ALL passenger names against staff family database',who:'Monthly'},
+    ]},
+    {title: '4. Red Flag Indicators', icon: '🚨', items: [
+      {id:'4.1',text:'Ticket issued outside staff shift hours → Auto-flag, investigate within 24 hrs',who:'Auto'},
+      {id:'4.2',text:'Ticket value > ₹50,000 without supervisor approval → Block until approved',who:'Auto'},
+      {id:'4.3',text:'Portal balance variance > 2% → Investigate same day',who:'Auto'},
+      {id:'4.4',text:'Personal booking source selected → Immediate supervisor notification',who:'Auto'},
+      {id:'4.5',text:'No customer invoice number provided → Cannot mark as verified',who:'Policy'},
+      {id:'4.6',text:'Duplicate PNR detected → Flag for review',who:'Auto'},
+      {id:'4.7',text:'Weekend/holiday booking without prior authorization → Auto-flag',who:'Auto'},
+    ]},
+    {title: '5. Monthly Review Checklist', icon: '📅', items: [
+      {id:'5.1',text:'Reconcile ALL portal balances against bank statements',who:'Owner'},
+      {id:'5.2',text:'Review all entries in Exception Report — ensure all resolved',who:'Owner'},
+      {id:'5.3',text:'Audit staff personal ticket declarations',who:'Owner'},
+      {id:'5.4',text:'Verify fund loading register against bank debits',who:'Owner'},
+      {id:'5.5',text:'Review staff-wise performance and flag anomalies',who:'Owner'},
+      {id:'5.6',text:'Update portal master data if any changes',who:'Admin'},
+      {id:'5.7',text:'Management review meeting on reconciliation findings',who:'Owner'},
+    ]},
+  ];
+
+  return (
+    <div>
+      {sections.map(sec => (
+        <div key={sec.title} className="card">
+          <div className="card-title"><span className="icon">{sec.icon}</span> {sec.title}</div>
+          <table>
+            <thead><tr><th style={{width:60}}>#</th><th>Procedure / Control</th><th style={{width:120}}>Responsibility</th></tr></thead>
+            <tbody>
+              {sec.items.map(item => (
+                <tr key={item.id}><td style={{fontWeight:600}}>{item.id}</td><td>{item.text}</td><td><span className="badge badge-ok">{item.who}</span></td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('app'));
+</script>
+</body>
+</html>
