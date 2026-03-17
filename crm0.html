@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SST Tours & Travels — ERP Dashboard v2.0</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --pri:#0D3B5E;
+  --pri-light:#1a5276;
+  --pri-dark:#082a44;
+  --acc:#f5a623;
+  --grn:#27ae60;
+  --red:#e74c3c;
+  --pur:#8e44ad;
+  --blu:#2980b9;
+  --ora:#e67e22;
+  --sidebar-w:240px;
+  --topbar-h:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#2d3748;overflow-x:hidden;}
+
+/* ─── SIDEBAR ─── */
+#sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--pri);color:#fff;overflow-y:auto;overflow-x:hidden;
+  transition:width .25s;z-index:1000;display:flex;flex-direction:column;
+}
+#sidebar .brand{
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;gap:10px;min-height:var(--topbar-h);
+}
+#sidebar .brand i{font-size:1.5rem;color:var(--acc);}
+#sidebar .brand span{font-size:1rem;font-weight:700;white-space:nowrap;}
+#sidebar .brand small{font-size:.65rem;opacity:.65;display:block;line-height:1;}
+#sidebar nav{flex:1;padding:8px 0;}
+#sidebar .nav-section{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;opacity:.5;padding:14px 16px 4px;}
+#sidebar .nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;cursor:pointer;transition:all .18s;
+  border-left:3px solid transparent;font-size:.875rem;
+  white-space:nowrap;color:rgba(255,255,255,.78);
+}
+#sidebar .nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+#sidebar .nav-item.active{
+  background:rgba(255,255,255,.14);color:#fff;
+  border-left-color:var(--acc);font-weight:600;
+}
+#sidebar .nav-item i{font-size:1rem;width:20px;text-align:center;}
+#sidebar .nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  font-size:.6rem;padding:1px 6px;border-radius:99px;font-weight:700;
+}
+#sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.12);font-size:.75rem;opacity:.5;}
+
+/* ─── TOP BAR ─── */
+#topbar{
+  position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);
+  background:#fff;border-bottom:1px solid #e2e8f0;z-index:999;
+  display:flex;align-items:center;padding:0 20px;gap:12px;
+}
+#topbar .page-title{font-size:1rem;font-weight:700;color:var(--pri);flex:1;}
+#topbar .topbar-badge{
+  background:#e8f4fd;color:var(--blu);font-size:.72rem;
+  padding:3px 10px;border-radius:99px;font-weight:600;
+}
+#topbar .avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--pri);color:#fff;font-size:.75rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+
+/* ─── MAIN CONTENT ─── */
+#main{
+  margin-left:var(--sidebar-w);margin-top:var(--topbar-h);
+  padding:24px;min-height:calc(100vh - var(--topbar-h));
+}
+.page-section{display:none;}
+.page-section.active{display:block;}
+
+/* ─── KPI CARDS ─── */
+.kpi-card{
+  background:#fff;border-radius:12px;padding:18px 20px;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+  display:flex;align-items:center;gap:14px;
+  border-top:4px solid var(--pri);transition:transform .2s;
+}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1);}
+.kpi-card.grn{border-top-color:var(--grn);}
+.kpi-card.red{border-top-color:var(--red);}
+.kpi-card.acc{border-top-color:var(--acc);}
+.kpi-card.pur{border-top-color:var(--pur);}
+.kpi-card.blu{border-top-color:var(--blu);}
+.kpi-card.ora{border-top-color:var(--ora);}
+.kpi-icon{
+  width:48px;height:48px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+}
+.kpi-icon.pri-bg{background:#e8f0fe;color:var(--pri);}
+.kpi-icon.grn-bg{background:#e8f8ee;color:var(--grn);}
+.kpi-icon.red-bg{background:#fef0ee;color:var(--red);}
+.kpi-icon.acc-bg{background:#fef8ee;color:var(--ora);}
+.kpi-icon.pur-bg{background:#f3e8fe;color:var(--pur);}
+.kpi-icon.blu-bg{background:#e8f4fd;color:var(--blu);}
+.kpi-icon.ora-bg{background:#fdf0e8;color:var(--ora);}
+.kpi-val{font-size:1.5rem;font-weight:800;color:#1a202c;line-height:1;}
+.kpi-lbl{font-size:.72rem;color:#718096;margin-top:2px;}
+.kpi-trend{font-size:.7rem;margin-top:4px;}
+.kpi-trend.up{color:var(--grn);} .kpi-trend.dn{color:var(--red);}
+
+/* ─── SECTION CARD ─── */
+.s-card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden;margin-bottom:20px;}
+.s-card-header{
+  padding:14px 18px;border-bottom:1px solid #e2e8f0;
+  display:flex;align-items:center;justify-content:space-between;
+  background:#fff;
+}
+.s-card-title{font-size:.9rem;font-weight:700;color:var(--pri);}
+.s-card-body{padding:18px;}
+
+/* ─── TABLES ─── */
+.erp-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+.erp-table th{
+  background:#f7fafc;color:#4a5568;font-weight:700;
+  padding:9px 12px;text-align:left;border-bottom:2px solid #e2e8f0;
+  font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;
+}
+.erp-table td{padding:9px 12px;border-bottom:1px solid #f0f4f8;vertical-align:middle;}
+.erp-table tr:hover td{background:#f9fafb;}
+
+/* ─── BADGES ─── */
+.badge-hot{background:#fef0ee;color:#e53e3e;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-warm{background:#fef8ee;color:#dd6b20;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-cold{background:#e8f4fd;color:#2980b9;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-won{background:#e8f8ee;color:#27ae60;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-lost{background:#f0f4f8;color:#718096;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-conf{background:#e8f8ee;color:#27ae60;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-pend{background:#fef8ee;color:#dd6b20;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-canc{background:#fef0ee;color:#e53e3e;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-prog{background:#e8f4fd;color:#2980b9;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-done{background:#e8f8ee;color:#27ae60;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-open{background:#fef8ee;color:#dd6b20;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-paid{background:#e8f8ee;color:#27ae60;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-unpaid{background:#fef0ee;color:#e53e3e;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-partial{background:#f3e8fe;color:#8e44ad;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-present{background:#e8f8ee;color:#27ae60;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-absent{background:#fef0ee;color:#e53e3e;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-leave{background:#fef8ee;color:#dd6b20;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-approved{background:#e8f8ee;color:#27ae60;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+.badge-review{background:#e8f4fd;color:#2980b9;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;}
+
+/* ─── ACTION BTNS ─── */
+.btn-pri{background:var(--pri);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:.8rem;cursor:pointer;font-weight:600;transition:background .2s;}
+.btn-pri:hover{background:var(--pri-light);}
+.btn-acc{background:var(--acc);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:.8rem;cursor:pointer;font-weight:600;}
+.btn-sm-ico{background:none;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:.75rem;color:#4a5568;transition:all .15s;}
+.btn-sm-ico:hover{background:var(--pri);color:#fff;border-color:var(--pri);}
+
+/* ─── PIPELINE KANBAN ─── */
+.kanban-wrap{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;}
+.kanban-col{min-width:200px;flex:1;}
+.kanban-header{
+  border-radius:8px 8px 0 0;padding:8px 12px;font-size:.75rem;font-weight:700;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.kanban-body{background:#f7fafc;border-radius:0 0 8px 8px;padding:8px;min-height:120px;}
+.kanban-card{
+  background:#fff;border-radius:8px;padding:10px;margin-bottom:8px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:3px solid transparent;font-size:.78rem;
+}
+.kanban-card .k-name{font-weight:700;color:#1a202c;margin-bottom:3px;}
+.kanban-card .k-meta{color:#718096;font-size:.7rem;}
+.kanban-card .k-val{color:var(--grn);font-weight:700;font-size:.8rem;}
+
+/* ─── PROGRESS BARS ─── */
+.prog-bar{height:6px;border-radius:99px;background:#e2e8f0;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:99px;background:var(--pri);}
+.prog-fill.grn{background:var(--grn);}
+.prog-fill.ora{background:var(--ora);}
+.prog-fill.red{background:var(--red);}
+
+/* ─── TIMELINE / ACTIVITY ─── */
+.activity-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f0f4f8;}
+.activity-item:last-child{border:none;}
+.act-dot{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;flex-shrink:0;margin-top:2px;
+}
+.act-body{flex:1;}
+.act-title{font-size:.8rem;color:#2d3748;font-weight:600;}
+.act-sub{font-size:.72rem;color:#718096;}
+.act-time{font-size:.68rem;color:#a0aec0;white-space:nowrap;}
+
+/* ─── FORM STYLES ─── */
+.erp-form .form-label{font-size:.78rem;font-weight:600;color:#4a5568;margin-bottom:3px;}
+.erp-form .form-control,.erp-form .form-select{font-size:.82rem;border-radius:7px;border:1px solid #e2e8f0;padding:7px 11px;}
+.erp-form .form-control:focus,.erp-form .form-select:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(13,59,94,.12);}
+
+/* ─── MODAL ─── */
+.modal-header{background:var(--pri);color:#fff;border:none;}
+.modal-header .btn-close{filter:invert(1);}
+.modal-title{font-size:.95rem;font-weight:700;}
+.modal-footer{border-top:1px solid #e2e8f0;}
+
+/* ─── STAT MINI ─── */
+.stat-mini{text-align:center;padding:14px 10px;background:#f7fafc;border-radius:10px;}
+.stat-mini .val{font-size:1.4rem;font-weight:800;color:var(--pri);}
+.stat-mini .lbl{font-size:.68rem;color:#718096;margin-top:2px;}
+
+/* ─── CHART CONTAINER ─── */
+.chart-box{position:relative;height:240px;}
+.chart-box-sm{position:relative;height:180px;}
+
+/* ─── ALERT STRIP ─── */
+.alert-strip{
+  background:linear-gradient(90deg,#fff3cd,#fffbee);
+  border:1px solid #ffc107;border-radius:8px;
+  padding:8px 14px;font-size:.78rem;color:#856404;
+  display:flex;align-items:center;gap:8px;margin-bottom:16px;
+}
+
+/* ─── STEP INDICATOR ─── */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:16px;}
+.step{
+  flex:1;text-align:center;font-size:.68rem;font-weight:600;
+  padding:6px 4px;background:#f0f4f8;color:#718096;
+  border-top:3px solid #e2e8f0;position:relative;
+}
+.step.done{background:#e8f8ee;color:var(--grn);border-top-color:var(--grn);}
+.step.active{background:#e8f0fe;color:var(--pri);border-top-color:var(--pri);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:992px){
+  #sidebar{width:60px;}
+  #sidebar .brand span,#sidebar .brand small,#sidebar .nav-item span,#sidebar .nav-section{display:none;}
+  #sidebar .nav-badge{display:none;}
+  #main{margin-left:60px;}
+  #topbar{left:60px;}
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:#f0f4f8;}
+::-webkit-scrollbar-thumb{background:#c5cdd8;border-radius:99px;}
+
+/* ─── PRINT ─── */
+@media print{#sidebar,#topbar{display:none;}#main{margin:0;padding:0;}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ SIDEBAR ══════════════════════════════ -->
+<div id="sidebar">
+  <div class="brand">
+    <i class="bi bi-airplane-fill"></i>
+    <div><span>SST Tours</span><small>ERP v2.0</small></div>
+  </div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <i class="bi bi-speedometer2"></i><span>CEO Dashboard</span>
+    </div>
+
+    <div class="nav-section">Sales</div>
+    <div class="nav-item" onclick="showPage('crm',this)">
+      <i class="bi bi-funnel"></i><span>CRM / Leads</span>
+      <span class="nav-badge" id="badge-crm">8</span>
+    </div>
+    <div class="nav-item" onclick="showPage('quotation',this)">
+      <i class="bi bi-file-earmark-text"></i><span>Quotations</span>
+      <span class="nav-badge" id="badge-quot">3</span>
+    </div>
+    <div class="nav-item" onclick="showPage('bookings',this)">
+      <i class="bi bi-calendar-check"></i><span>Bookings</span>
+    </div>
+
+    <div class="nav-section">Operations</div>
+    <div class="nav-item" onclick="showPage('operations',this)">
+      <i class="bi bi-tools"></i><span>Operations</span>
+      <span class="nav-badge" id="badge-ops">4</span>
+    </div>
+    <div class="nav-item" onclick="showPage('itinerary',this)">
+      <i class="bi bi-map"></i><span>Itinerary Builder</span>
+    </div>
+    <div class="nav-item" onclick="showPage('visa',this)">
+      <i class="bi bi-passport"></i><span>Visa Tracker</span>
+      <span class="nav-badge" id="badge-visa">2</span>
+    </div>
+
+    <div class="nav-section">Finance & HR</div>
+    <div class="nav-item" onclick="showPage('finance',this)">
+      <i class="bi bi-currency-rupee"></i><span>Finance</span>
+    </div>
+    <div class="nav-item" onclick="showPage('hr',this)">
+      <i class="bi bi-people"></i><span>HR & Payroll</span>
+    </div>
+
+    <div class="nav-section">Insights</div>
+    <div class="nav-item" onclick="showPage('reports',this)">
+      <i class="bi bi-bar-chart-line"></i><span>Reports</span>
+    </div>
+
+    <div class="nav-section">Admin</div>
+    <div class="nav-item" onclick="showPage('settings',this)">
+      <i class="bi bi-gear"></i><span>Settings</span>
+    </div>
+  </nav>
+  <div id="sidebar-footer">SST ERP v2.0 · Mar 2026</div>
+</div>
+
+<!-- ══════════════════════════════ TOP BAR ══════════════════════════════ -->
+<div id="topbar">
+  <div class="page-title" id="topbar-title">CEO Dashboard</div>
+  <span class="topbar-badge"><i class="bi bi-circle-fill text-success me-1" style="font-size:.45rem;"></i>Live Data</span>
+  <span class="topbar-badge ms-1"><i class="bi bi-calendar3 me-1"></i>Mar 2026</span>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <button class="btn-sm-ico" title="Notifications"><i class="bi bi-bell"></i></button>
+    <div class="avatar" title="Gajendra (Admin)">GA</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ MAIN CONTENT ══════════════════════════════ -->
+<div id="main">
+
+<!-- ─────────────────── PAGE 1: CEO DASHBOARD ─────────────────── -->
+<div class="page-section active" id="pg-dashboard">
+  <div class="alert-strip">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <strong>Alerts:</strong> 2 visa applications expiring in 5 days · 3 invoices overdue · 1 tour departs tomorrow (Goa Group - 18 pax)
+  </div>
+
+  <!-- KPI Row 1 -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="kpi-card grn">
+        <div class="kpi-icon grn-bg"><i class="bi bi-currency-rupee"></i></div>
+        <div>
+          <div class="kpi-val">₹38.4L</div>
+          <div class="kpi-lbl">Revenue (MTD)</div>
+          <div class="kpi-trend up"><i class="bi bi-arrow-up-short"></i>+12% vs last month</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="kpi-card acc">
+        <div class="kpi-icon acc-bg"><i class="bi bi-people-fill"></i></div>
+        <div>
+          <div class="kpi-val">142</div>
+          <div class="kpi-lbl">Active Leads</div>
+          <div class="kpi-trend up"><i class="bi bi-arrow-up-short"></i>+23 this week</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="kpi-card">
+        <div class="kpi-icon pri-bg"><i class="bi bi-calendar-check-fill"></i></div>
+        <div>
+          <div class="kpi-val">67</div>
+          <div class="kpi-lbl">Confirmed Bookings</div>
+          <div class="kpi-trend up"><i class="bi bi-arrow-up-short"></i>+8 this week</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="kpi-card pur">
+        <div class="kpi-icon pur-bg"><i class="bi bi-person-check-fill"></i></div>
+        <div>
+          <div class="kpi-val">284</div>
+          <div class="kpi-lbl">Total Pax (MTD)</div>
+          <div class="kpi-trend up"><i class="bi bi-arrow-up-short"></i>+31 vs Mar'25</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="kpi-card red">
+        <div class="kpi-icon red-bg"><i class="bi bi-receipt-cutoff"></i></div>
+        <div>
+          <div class="kpi-val">₹6.2L</div>
+          <div class="kpi-lbl">Pending Payments</div>
+          <div class="kpi-trend dn"><i class="bi bi-arrow-down-short"></i>12 invoices due</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="kpi-card blu">
+        <div class="kpi-icon blu-bg"><i class="bi bi-graph-up-arrow"></i></div>
+        <div>
+          <div class="kpi-val">31%</div>
+          <div class="kpi-lbl">Conversion Rate</div>
+          <div class="kpi-trend up"><i class="bi bi-arrow-up-short"></i>+4pts vs Feb</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8">
+      <div class="s-card">
+        <div class="s-card-header">
+          <span class="s-card-title"><i class="bi bi-bar-chart-fill me-2"></i>Monthly Revenue — FY 2025-26 (₹ Lakhs)</span>
+          <select class="form-select form-select-sm" style="width:130px;font-size:.75rem;">
+            <option>Domestic + Intl</option><option>Domestic Only</option><option>International Only</option>
+          </select>
+        </div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartRevenue"></canvas></div></div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-pie-chart-fill me-2"></i>Lead Sources (MTD)</span></div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartLeadSource"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Pipeline + Activity + Tasks -->
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-funnel-fill me-2"></i>Sales Pipeline</span></div>
+        <div class="s-card-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.78rem;font-weight:600;">New Enquiry</span><span style="font-size:.78rem;color:var(--pri);font-weight:700;">38 · ₹28L</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--pri)"></div></div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.78rem;font-weight:600;">Quotation Sent</span><span style="font-size:.78rem;color:var(--blu);font-weight:700;">26 · ₹19L</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:68%;background:var(--blu)"></div></div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.78rem;font-weight:600;">Follow-Up</span><span style="font-size:.78rem;color:var(--ora);font-weight:700;">18 · ₹14L</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:47%;background:var(--ora)"></div></div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.78rem;font-weight:600;">Advance Received</span><span style="font-size:.78rem;color:var(--pur);font-weight:700;">12 · ₹9.6L</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:32%;background:var(--pur)"></div></div>
+          </div>
+          <div class="mb-1">
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.78rem;font-weight:600;">Confirmed / Won</span><span style="font-size:.78rem;color:var(--grn);font-weight:700;">8 · ₹7.2L</span></div>
+            <div class="prog-bar"><div class="prog-fill grn" style="width:21%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="s-card">
+        <div class="s-card-header">
+          <span class="s-card-title"><i class="bi bi-clock-history me-2"></i>Recent Activity</span>
+          <span style="font-size:.7rem;color:#718096;">Today</span>
+        </div>
+        <div class="s-card-body" style="max-height:280px;overflow-y:auto;">
+          <div class="activity-item">
+            <div class="act-dot grn-bg"><i class="bi bi-check-circle-fill" style="color:var(--grn);"></i></div>
+            <div class="act-body"><div class="act-title">Booking confirmed — Rajesh Family (Rajasthan 6N)</div><div class="act-sub">by Arjun · ₹84,000</div></div>
+            <div class="act-time">09:42 AM</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot acc-bg"><i class="bi bi-person-plus-fill" style="color:var(--ora);"></i></div>
+            <div class="act-body"><div class="act-title">New lead added — Sharma Couple (Maldives)</div><div class="act-sub">by Neha · Source: Instagram</div></div>
+            <div class="act-time">09:15 AM</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot blu-bg"><i class="bi bi-send-fill" style="color:var(--blu);"></i></div>
+            <div class="act-body"><div class="act-title">Quotation sent — Mehta Group (Goa 4N, 12 pax)</div><div class="act-sub">by Divya · ₹1,56,000</div></div>
+            <div class="act-time">08:50 AM</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot red-bg"><i class="bi bi-passport-fill" style="color:var(--red);"></i></div>
+            <div class="act-body"><div class="act-title">Visa alert — Gupta family (Thailand) expires in 4 days</div><div class="act-sub">Flagged by system</div></div>
+            <div class="act-time">08:30 AM</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot grn-bg"><i class="bi bi-currency-rupee" style="color:var(--grn);"></i></div>
+            <div class="act-body"><div class="act-title">Payment received — Verma family ₹45,000</div><div class="act-sub">Booking #BK-2026-031</div></div>
+            <div class="act-time">Yesterday</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot pur-bg"><i class="bi bi-calendar-event-fill" style="color:var(--pur);"></i></div>
+            <div class="act-body"><div class="act-title">Goa Group Tour departs tomorrow — 18 pax ready</div><div class="act-sub">Kiran confirmed all arrangements</div></div>
+            <div class="act-time">Yesterday</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-list-task me-2"></i>Pending Tasks</span><button class="btn-sm-ico" onclick="showPage('operations',document.querySelector('[onclick*=operations]'))"><i class="bi bi-arrow-right"></i></button></div>
+        <div class="s-card-body" style="max-height:280px;overflow-y:auto;">
+          <div class="activity-item">
+            <div class="act-dot red-bg"><i class="bi bi-exclamation-circle-fill" style="color:var(--red);font-size:.9rem;"></i></div>
+            <div class="act-body"><div class="act-title">Follow up with Patel family (Kedarnath)</div><div class="act-sub">Assigned: Arjun · Due: Today</div></div>
+            <span class="badge-hot ms-auto">Hot</span>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot acc-bg"><i class="bi bi-clock-fill" style="color:var(--ora);font-size:.9rem;"></i></div>
+            <div class="act-body"><div class="act-title">Book hotel — Mehta Group Goa (check-in 20 Mar)</div><div class="act-sub">Assigned: Mithun · Due: Tomorrow</div></div>
+            <span class="badge-warm ms-auto">Medium</span>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot blu-bg"><i class="bi bi-passport-fill" style="color:var(--blu);font-size:.9rem;"></i></div>
+            <div class="act-body"><div class="act-title">Submit visa docs — Singh family (Dubai)</div><div class="act-sub">Assigned: Pooja · Due: 18 Mar</div></div>
+            <span class="badge-cold ms-auto">Visa</span>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot pur-bg"><i class="bi bi-file-earmark-text-fill" style="color:var(--pur);font-size:.9rem;"></i></div>
+            <div class="act-body"><div class="act-title">Prepare itinerary — Sharma Couple (Maldives)</div><div class="act-sub">Assigned: Shreya · Due: 19 Mar</div></div>
+            <span class="badge-prog ms-auto">In Progress</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff Performance Summary -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-trophy-fill me-2"></i>Sales Team Performance (Mar 2026)</span></div>
+        <div class="s-card-body p-0">
+          <table class="erp-table">
+            <thead><tr><th>Staff</th><th>Leads</th><th>Converted</th><th>Revenue</th><th>Target</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Arjun Kumar</strong><br><small class="text-muted">Sales Exec</small></td><td>42</td><td>14</td><td>₹12.4L</td><td>₹12L</td><td><span class="badge-paid">103%</span></td></tr>
+              <tr><td><strong>Neha Singh</strong><br><small class="text-muted">Sales Exec</small></td><td>38</td><td>11</td><td>₹9.8L</td><td>₹12L</td><td><span class="badge-partial">82%</span></td></tr>
+              <tr><td><strong>Divya (HOD)</strong><br><small class="text-muted">Sales Head</small></td><td>62</td><td>21</td><td>₹16.2L</td><td>₹15L</td><td><span class="badge-paid">108%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-geo-alt-fill me-2"></i>Top Destinations (Mar 2026)</span></div>
+        <div class="s-card-body"><div class="chart-box-sm"><canvas id="chartDestinations"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-dashboard -->
+
+<!-- ─────────────────── PAGE 2: CRM / LEADS ─────────────────── -->
+<div class="page-section" id="pg-crm">
+  <!-- Sub-nav -->
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <button class="btn-pri" onclick="crmTab('all',this)">All Leads (142)</button>
+    <button class="btn-sm-ico" onclick="crmTab('hot',this)">🔴 Hot (22)</button>
+    <button class="btn-sm-ico" onclick="crmTab('warm',this)">🟡 Warm (48)</button>
+    <button class="btn-sm-ico" onclick="crmTab('cold',this)">🔵 Cold (52)</button>
+    <button class="btn-sm-ico" onclick="crmTab('won',this)">✅ Won (12)</button>
+    <button class="btn-sm-ico ms-auto" data-bs-toggle="modal" data-bs-target="#addLeadModal"><i class="bi bi-plus-lg me-1"></i>Add Lead</button>
+    <button class="btn-sm-ico"><i class="bi bi-download me-1"></i>Export</button>
+  </div>
+
+  <!-- Pipeline Kanban -->
+  <div class="s-card mb-3">
+    <div class="s-card-header"><span class="s-card-title"><i class="bi bi-kanban me-2"></i>Lead Pipeline View</span><span style="font-size:.72rem;color:#718096;">Drag cards to update stage (coming in v1.1)</span></div>
+    <div class="s-card-body">
+      <div class="kanban-wrap">
+        <div class="kanban-col">
+          <div class="kanban-header" style="background:#e8f0fe;color:var(--pri);">New Enquiry <span>38</span></div>
+          <div class="kanban-body">
+            <div class="kanban-card" style="border-left-color:var(--red);">
+              <div class="k-name">Patel Family</div>
+              <div class="k-meta">Kedarnath 5N · 4 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹72,000</span><span class="badge-hot">Hot</span></div>
+            </div>
+            <div class="kanban-card" style="border-left-color:var(--ora);">
+              <div class="k-name">Sharma Couple</div>
+              <div class="k-meta">Maldives 5N · 2 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹1,40,000</span><span class="badge-warm">Warm</span></div>
+            </div>
+            <div class="kanban-card" style="border-left-color:var(--blu);">
+              <div class="k-name">Ravi Iyer</div>
+              <div class="k-meta">Coorg Weekend · 4 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹24,000</span><span class="badge-cold">Cold</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header" style="background:#e8f4fd;color:var(--blu);">Quotation Sent <span>26</span></div>
+          <div class="kanban-body">
+            <div class="kanban-card" style="border-left-color:var(--blu);">
+              <div class="k-name">Mehta Group</div>
+              <div class="k-meta">Goa 4N · 12 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹1,56,000</span><span class="badge-warm">Warm</span></div>
+            </div>
+            <div class="kanban-card" style="border-left-color:var(--red);">
+              <div class="k-name">Gupta Family</div>
+              <div class="k-meta">Bangkok 6N · 5 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹1,85,000</span><span class="badge-hot">Hot</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header" style="background:#fdf0e8;color:var(--ora);">Follow-Up <span>18</span></div>
+          <div class="kanban-body">
+            <div class="kanban-card" style="border-left-color:var(--ora);">
+              <div class="k-name">Kumar Couple</div>
+              <div class="k-meta">Kerala 7N · 2 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹56,000</span><span class="badge-warm">Warm</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header" style="background:#f3e8fe;color:var(--pur);">Advance Paid <span>12</span></div>
+          <div class="kanban-body">
+            <div class="kanban-card" style="border-left-color:var(--pur);">
+              <div class="k-name">Singh Family</div>
+              <div class="k-meta">Dubai 5N · 4 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹1,20,000</span><span class="badge-hot">Hot</span></div>
+            </div>
+            <div class="kanban-card" style="border-left-color:var(--pur);">
+              <div class="k-name">Rao Group</div>
+              <div class="k-meta">Manali 4N · 8 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹96,000</span><span class="badge-warm">Warm</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-header" style="background:#e8f8ee;color:var(--grn);">Confirmed ✓ <span>8</span></div>
+          <div class="kanban-body">
+            <div class="kanban-card" style="border-left-color:var(--grn);">
+              <div class="k-name">Rajesh Family</div>
+              <div class="k-meta">Rajasthan 6N · 4 pax</div>
+              <div class="d-flex justify-content-between mt-1"><span class="k-val">₹84,000</span><span class="badge-won">Won</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leads Table -->
+  <div class="s-card">
+    <div class="s-card-header">
+      <span class="s-card-title"><i class="bi bi-table me-2"></i>All Leads — March 2026</span>
+      <input type="search" class="form-control form-control-sm" style="width:200px;font-size:.75rem;" placeholder="Search leads...">
+    </div>
+    <div class="s-card-body p-0" style="overflow-x:auto;">
+      <table class="erp-table">
+        <thead>
+          <tr><th>#</th><th>Client Name</th><th>Destination</th><th>Pax</th><th>Budget</th><th>Source</th><th>Assigned To</th><th>Stage</th><th>Follow-Up</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>L-142</td><td><strong>Patel Family</strong><br><small class="text-muted">+91 98765 43210</small></td><td>Kedarnath 5N7D</td><td>4</td><td>₹72,000</td><td><span class="badge-warm">WhatsApp</span></td><td>Arjun</td><td><span class="badge-hot">Hot</span></td><td>Today</td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button> <button class="btn-sm-ico" style="color:var(--grn);"><i class="bi bi-check2-circle"></i></button></td></tr>
+          <tr><td>L-141</td><td><strong>Sharma Couple</strong><br><small class="text-muted">+91 87654 32109</small></td><td>Maldives 5N6D</td><td>2</td><td>₹1,40,000</td><td><span class="badge-warm">Instagram</span></td><td>Neha</td><td><span class="badge-warm">Warm</span></td><td>Tomorrow</td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button> <button class="btn-sm-ico" style="color:var(--grn);"><i class="bi bi-check2-circle"></i></button></td></tr>
+          <tr><td>L-140</td><td><strong>Mehta Group</strong><br><small class="text-muted">+91 76543 21098</small></td><td>Goa 4N5D</td><td>12</td><td>₹1,56,000</td><td><span class="badge-cold">Google</span></td><td>Divya</td><td><span class="badge-warm">Quotation Sent</span></td><td>16 Mar</td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button> <button class="btn-sm-ico" style="color:var(--grn);"><i class="bi bi-check2-circle"></i></button></td></tr>
+          <tr><td>L-139</td><td><strong>Gupta Family</strong><br><small class="text-muted">+91 65432 10987</small></td><td>Bangkok 6N7D</td><td>5</td><td>₹1,85,000</td><td><span class="badge-warm">Referral</span></td><td>Arjun</td><td><span class="badge-hot">Hot</span></td><td>17 Mar</td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button> <button class="btn-sm-ico" style="color:var(--grn);"><i class="bi bi-check2-circle"></i></button></td></tr>
+          <tr><td>L-138</td><td><strong>Singh Family</strong><br><small class="text-muted">+91 54321 09876</small></td><td>Dubai 5N6D</td><td>4</td><td>₹1,20,000</td><td><span class="badge-cold">Website</span></td><td>Neha</td><td><span class="badge-pur" style="background:#f3e8fe;color:var(--pur);font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;">Advance Paid</span></td><td>Done</td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button> <button class="btn-sm-ico" style="color:var(--grn);"><i class="bi bi-check2-circle"></i></button></td></tr>
+          <tr><td>L-137</td><td><strong>Rajesh Family</strong><br><small class="text-muted">+91 43210 98765</small></td><td>Rajasthan 6N7D</td><td>4</td><td>₹84,000</td><td><span class="badge-warm">WhatsApp</span></td><td>Arjun</td><td><span class="badge-won">Won ✓</span></td><td>—</td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- end pg-crm -->
+
+<!-- ─────────────────── PAGE 3: QUOTATIONS ─────────────────── -->
+<div class="page-section" id="pg-quotation">
+  <div class="row g-3 mb-3">
+    <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pri);">47</div><div class="lbl">Total Quotes Sent</div></div></div>
+    <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--grn);">18</div><div class="lbl">Accepted</div></div></div>
+    <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--ora);">22</div><div class="lbl">Pending Response</div></div></div>
+    <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--red);">7</div><div class="lbl">Rejected / Revised</div></div></div>
+  </div>
+  <div class="s-card mb-3">
+    <div class="s-card-header">
+      <span class="s-card-title"><i class="bi bi-file-earmark-text-fill me-2"></i>Recent Quotations</span>
+      <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#addQuoteModal"><i class="bi bi-plus-lg me-1"></i>New Quote</button>
+    </div>
+    <div class="s-card-body p-0" style="overflow-x:auto;">
+      <table class="erp-table">
+        <thead><tr><th>Quote #</th><th>Client</th><th>Tour</th><th>Pax</th><th>Days</th><th>Quote Value</th><th>Prepared By</th><th>Date Sent</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr><td>Q-2026-047</td><td>Mehta Group</td><td>Goa Beach Package</td><td>12</td><td>4N5D</td><td>₹1,56,000</td><td>Divya</td><td>15 Mar</td><td><span class="badge-pend">Awaiting</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button> <button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+          <tr><td>Q-2026-046</td><td>Gupta Family</td><td>Bangkok Explorer</td><td>5</td><td>6N7D</td><td>₹1,85,000</td><td>Arjun</td><td>14 Mar</td><td><span class="badge-pend">Revision</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button> <button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+          <tr><td>Q-2026-045</td><td>Singh Family</td><td>Dubai Gold Package</td><td>4</td><td>5N6D</td><td>₹1,20,000</td><td>Neha</td><td>12 Mar</td><td><span class="badge-conf">Accepted</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button> <button class="btn-sm-ico" style="color:var(--grn);"><i class="bi bi-calendar-check"></i></button></td></tr>
+          <tr><td>Q-2026-044</td><td>Rajesh Family</td><td>Rajasthan Heritage</td><td>4</td><td>6N7D</td><td>₹84,000</td><td>Arjun</td><td>10 Mar</td><td><span class="badge-conf">Accepted</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>Q-2026-043</td><td>Sharma Couple</td><td>Maldives Honeymoon</td><td>2</td><td>5N6D</td><td>₹1,40,000</td><td>Neha</td><td>09 Mar</td><td><span class="badge-pend">Awaiting</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button> <button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Quote Template Builder (preview) -->
+  <div class="s-card">
+    <div class="s-card-header"><span class="s-card-title"><i class="bi bi-layout-text-window me-2"></i>Quote Builder (Preview Mode)</span><span style="font-size:.72rem;color:#718096;">Full PDF generation in v1.1</span></div>
+    <div class="s-card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <div style="border:2px dashed #e2e8f0;border-radius:10px;padding:20px;background:#fafbfc;">
+            <div style="text-align:center;margin-bottom:16px;">
+              <div style="font-size:1.1rem;font-weight:800;color:var(--pri);">✈ SST Tours & Travels</div>
+              <div style="font-size:.75rem;color:#718096;">Holiday Quotation — Q-2026-048 (Draft)</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.78rem;margin-bottom:12px;">
+              <div><strong>Client:</strong> [Client Name]</div>
+              <div><strong>Date:</strong> 16 Mar 2026</div>
+              <div><strong>Destination:</strong> [Destination]</div>
+              <div><strong>Travel Dates:</strong> [Dates]</div>
+              <div><strong>Pax:</strong> [N] Adults, [N] Children</div>
+              <div><strong>Valid Until:</strong> 23 Mar 2026</div>
+            </div>
+            <table style="width:100%;font-size:.75rem;border-collapse:collapse;">
+              <tr style="background:#f7fafc;"><th style="padding:6px;text-align:left;border:1px solid #e2e8f0;">Component</th><th style="padding:6px;text-align:right;border:1px solid #e2e8f0;">Cost</th></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;">Flights (Return)</td><td style="padding:6px;text-align:right;border:1px solid #e2e8f0;">₹ —</td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;">Hotel (per night × N nights)</td><td style="padding:6px;text-align:right;border:1px solid #e2e8f0;">₹ —</td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;">Transfers + Sightseeing</td><td style="padding:6px;text-align:right;border:1px solid #e2e8f0;">₹ —</td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;">Visa Charges</td><td style="padding:6px;text-align:right;border:1px solid #e2e8f0;">₹ —</td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;">Travel Insurance</td><td style="padding:6px;text-align:right;border:1px solid #e2e8f0;">₹ —</td></tr>
+              <tr style="font-weight:700;background:#e8f0fe;"><td style="padding:6px;border:1px solid #e2e8f0;">Total Package Cost</td><td style="padding:6px;text-align:right;border:1px solid #e2e8f0;color:var(--pri);">₹ —</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="erp-form">
+            <div class="mb-2"><label class="form-label">Client Name</label><input type="text" class="form-control" placeholder="Enter client name"></div>
+            <div class="mb-2"><label class="form-label">Destination</label><input type="text" class="form-control" placeholder="e.g. Goa 4N5D"></div>
+            <div class="mb-2"><label class="form-label">No. of Pax</label><input type="number" class="form-control" placeholder="4"></div>
+            <div class="mb-2"><label class="form-label">Package Price (₹)</label><input type="number" class="form-control" placeholder="84000"></div>
+            <div class="mb-2"><label class="form-label">Sales Person</label>
+              <select class="form-select"><option>Divya</option><option>Arjun</option><option>Neha</option></select>
+            </div>
+            <button class="btn-pri w-100 mt-2"><i class="bi bi-file-earmark-pdf me-1"></i>Generate PDF (v1.1)</button>
+            <button class="btn-sm-ico w-100 mt-2"><i class="bi bi-whatsapp me-1"></i>Share via WhatsApp</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-quotation -->
+
+<!-- ─────────────────── PAGE 4: BOOKINGS ─────────────────── -->
+<div class="page-section" id="pg-bookings">
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pri);">67</div><div class="lbl">Total Bookings (Mar)</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--grn);">284</div><div class="lbl">Total Pax</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--ora);">₹38.4L</div><div class="lbl">Total Revenue</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pur);">12</div><div class="lbl">Departing This Week</div></div></div>
+  </div>
+  <!-- Steps indicator for upcoming departures -->
+  <div class="s-card mb-3">
+    <div class="s-card-header"><span class="s-card-title"><i class="bi bi-airplane-engines-fill me-2"></i>Upcoming Departures — Next 7 Days</span></div>
+    <div class="s-card-body p-0" style="overflow-x:auto;">
+      <table class="erp-table">
+        <thead><tr><th>Booking #</th><th>Client / Group</th><th>Destination</th><th>Depart</th><th>Return</th><th>Pax</th><th>Tour Type</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr style="background:#fff8e6;"><td><strong>BK-2026-067</strong></td><td><strong>Goa Group Tour</strong><br><small class="text-muted">SST Group Package</small></td><td>Goa 4N5D</td><td><strong style="color:var(--red);">17 Mar ⚠</strong></td><td>21 Mar</td><td><strong>18</strong></td><td>Group</td><td><span class="badge-conf">Confirmed</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>BK-2026-066</td><td>Singh Family<br><small class="text-muted">Dubai Gold Package</small></td><td>Dubai 5N6D</td><td>18 Mar</td><td>23 Mar</td><td>4</td><td>FIT</td><td><span class="badge-conf">Confirmed</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>BK-2026-065</td><td>Rajesh Family<br><small class="text-muted">Rajasthan Heritage</small></td><td>Rajasthan 6N7D</td><td>19 Mar</td><td>25 Mar</td><td>4</td><td>FIT</td><td><span class="badge-conf">Confirmed</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>BK-2026-064</td><td>Verma Family</td><td>Kerala 7N8D</td><td>20 Mar</td><td>27 Mar</td><td>5</td><td>FIT</td><td><span class="badge-pend">Partial Payment</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- All Bookings Table -->
+  <div class="s-card">
+    <div class="s-card-header">
+      <span class="s-card-title"><i class="bi bi-list-ul me-2"></i>All Bookings — March 2026</span>
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm" style="width:130px;font-size:.75rem;"><option>All Types</option><option>FIT</option><option>Group</option><option>Corporate</option><option>Honeymoon</option></select>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#addBookingModal"><i class="bi bi-plus-lg me-1"></i>New Booking</button>
+      </div>
+    </div>
+    <div class="s-card-body p-0" style="overflow-x:auto;">
+      <table class="erp-table">
+        <thead><tr><th>Booking #</th><th>Client</th><th>Destination</th><th>Type</th><th>Pax</th><th>Depart</th><th>Package Value</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>BK-2026-067</td><td>Goa Group Tour</td><td>Goa 4N5D</td><td>Group</td><td>18</td><td>17 Mar</td><td>₹2,34,000</td><td>₹2,34,000</td><td>₹0</td><td><span class="badge-conf">Confirmed</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>BK-2026-066</td><td>Singh Family</td><td>Dubai 5N6D</td><td>FIT</td><td>4</td><td>18 Mar</td><td>₹1,20,000</td><td>₹1,20,000</td><td>₹0</td><td><span class="badge-conf">Confirmed</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>BK-2026-065</td><td>Rajesh Family</td><td>Rajasthan 6N7D</td><td>FIT</td><td>4</td><td>19 Mar</td><td>₹84,000</td><td>₹84,000</td><td>₹0</td><td><span class="badge-conf">Confirmed</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>BK-2026-064</td><td>Verma Family</td><td>Kerala 7N8D</td><td>FIT</td><td>5</td><td>20 Mar</td><td>₹1,05,000</td><td>₹60,000</td><td style="color:var(--red);font-weight:700;">₹45,000</td><td><span class="badge-pend">Partial</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>BK-2026-063</td><td>Sharma Couple</td><td>Andaman 5N6D</td><td>Honeymoon</td><td>2</td><td>22 Mar</td><td>₹72,000</td><td>₹25,000</td><td style="color:var(--red);font-weight:700;">₹47,000</td><td><span class="badge-pend">Advance Only</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- end pg-bookings -->
+
+<!-- ─────────────────── PAGE 5: OPERATIONS ─────────────────── -->
+<div class="page-section" id="pg-operations">
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--red);">4</div><div class="lbl">Overdue Tasks</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--ora);">12</div><div class="lbl">In Progress</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--grn);">28</div><div class="lbl">Completed (Mar)</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pri);">8</div><div class="lbl">Active Vendors</div></div></div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="s-card">
+        <div class="s-card-header">
+          <span class="s-card-title"><i class="bi bi-check2-square me-2"></i>Task Tracker</span>
+          <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i class="bi bi-plus-lg me-1"></i>Add Task</button>
+        </div>
+        <div class="s-card-body p-0" style="overflow-x:auto;">
+          <table class="erp-table">
+            <thead><tr><th>Task</th><th>Related To</th><th>Assigned</th><th>Priority</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Follow up call — Patel family</strong></td><td>L-142 · Kedarnath</td><td>Arjun</td><td><span class="badge-hot">High</span></td><td style="color:var(--red);">16 Mar ⚠</td><td><span class="badge-open">Pending</span></td><td><button class="btn-sm-ico"><i class="bi bi-check2"></i></button></td></tr>
+              <tr><td><strong>Book Sea Face Hotel — Goa</strong></td><td>BK-2026-067</td><td>Mithun</td><td><span class="badge-hot">High</span></td><td>16 Mar</td><td><span class="badge-prog">In Progress</span></td><td><button class="btn-sm-ico"><i class="bi bi-check2"></i></button></td></tr>
+              <tr><td><strong>Arrange AC cab — Rajasthan</strong></td><td>BK-2026-065</td><td>Rahul</td><td><span class="badge-warm">Medium</span></td><td>17 Mar</td><td><span class="badge-prog">In Progress</span></td><td><button class="btn-sm-ico"><i class="bi bi-check2"></i></button></td></tr>
+              <tr><td><strong>Submit visa docs — Singh family</strong></td><td>BK-2026-066</td><td>Pooja</td><td><span class="badge-hot">High</span></td><td>17 Mar</td><td><span class="badge-prog">In Progress</span></td><td><button class="btn-sm-ico"><i class="bi bi-check2"></i></button></td></tr>
+              <tr><td><strong>Prepare Maldives itinerary</strong></td><td>L-141</td><td>Shreya</td><td><span class="badge-warm">Medium</span></td><td>19 Mar</td><td><span class="badge-open">Pending</span></td><td><button class="btn-sm-ico"><i class="bi bi-check2"></i></button></td></tr>
+              <tr><td><strong>Confirm hotel — Verma family Kerala</strong></td><td>BK-2026-064</td><td>Mithun</td><td><span class="badge-warm">Medium</span></td><td>18 Mar</td><td><span class="badge-done">Done ✓</span></td><td>—</td></tr>
+              <tr><td><strong>Collect balance payment — Verma</strong></td><td>BK-2026-064</td><td>Arjun</td><td><span class="badge-warm">Medium</span></td><td>19 Mar</td><td><span class="badge-open">Pending</span></td><td><button class="btn-sm-ico"><i class="bi bi-check2"></i></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="s-card mb-3">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-shop me-2"></i>Vendor Directory</span><button class="btn-sm-ico"><i class="bi bi-plus-lg"></i></button></div>
+        <div class="s-card-body p-0">
+          <table class="erp-table">
+            <thead><tr><th>Vendor</th><th>Type</th><th>Rating</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Sea Face Hotels</strong><br><small class="text-muted">Goa</small></td><td>Hotel</td><td>⭐⭐⭐⭐</td></tr>
+              <tr><td><strong>Rajwada Palace</strong><br><small class="text-muted">Jaipur</small></td><td>Hotel</td><td>⭐⭐⭐⭐⭐</td></tr>
+              <tr><td><strong>Speedy Cabs</strong><br><small class="text-muted">Bangalore</small></td><td>Transport</td><td>⭐⭐⭐⭐</td></tr>
+              <tr><td><strong>IndiGo Corporate</strong><br><small class="text-muted">All routes</small></td><td>Airline</td><td>⭐⭐⭐</td></tr>
+              <tr><td><strong>VFS Global</strong><br><small class="text-muted">Dubai/UK visa</small></td><td>Visa</td><td>⭐⭐⭐⭐</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-graph-up me-2"></i>Task Completion (Mar)</span></div>
+        <div class="s-card-body"><div class="chart-box-sm"><canvas id="chartTasks"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-operations -->
+
+<!-- ─────────────────── PAGE 6: ITINERARY BUILDER ─────────────────── -->
+<div class="page-section" id="pg-itinerary">
+  <div class="s-card mb-3">
+    <div class="s-card-header">
+      <span class="s-card-title"><i class="bi bi-map-fill me-2"></i>Itinerary Builder</span>
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm" style="width:200px;font-size:.75rem;">
+          <option>Sharma Couple — Maldives (Draft)</option>
+          <option>Mehta Group — Goa (Draft)</option>
+          <option>New Itinerary...</option>
+        </select>
+        <button class="btn-pri"><i class="bi bi-plus-lg me-1"></i>New Itinerary</button>
+        <button class="btn-sm-ico"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</button>
+      </div>
+    </div>
+    <div class="s-card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-md-3"><div class="erp-form"><label class="form-label">Client Name</label><input class="form-control" value="Sharma Couple" type="text"></div></div>
+        <div class="col-md-3"><div class="erp-form"><label class="form-label">Destination</label><input class="form-control" value="Maldives" type="text"></div></div>
+        <div class="col-md-2"><div class="erp-form"><label class="form-label">Check-In</label><input class="form-control" value="2026-03-25" type="date"></div></div>
+        <div class="col-md-2"><div class="erp-form"><label class="form-label">Check-Out</label><input class="form-control" value="2026-03-30" type="date"></div></div>
+        <div class="col-md-2"><div class="erp-form"><label class="form-label">Pax</label><input class="form-control" value="2 Adults" type="text"></div></div>
+      </div>
+
+      <!-- Day-by-day itinerary -->
+      <div id="itinerary-days">
+        <div class="mb-3" style="border-left:4px solid var(--pri);padding-left:14px;">
+          <div style="font-weight:700;color:var(--pri);margin-bottom:6px;">Day 1 — 25 Mar 2026: Arrival in Malé</div>
+          <div style="font-size:.8rem;color:#4a5568;margin-bottom:8px;">🛫 Depart Bangalore (BLR) at 07:15. Arrive Malé (MLE) 09:45. Transfer by speedboat to Hulhumale Resort (30 min). Check-in, rest, welcome drink. Evening: Sunset cruise with snorkeling. Dinner at resort (Seafood BBQ).</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="background:#e8f0fe;color:var(--pri);font-size:.68rem;padding:2px 8px;border-radius:99px;">✈ Indigo 6E-1234</span>
+            <span style="background:#e8f8ee;color:var(--grn);font-size:.68rem;padding:2px 8px;border-radius:99px;">🏨 Hulhumale Premium Resort</span>
+            <span style="background:#fdf0e8;color:var(--ora);font-size:.68rem;padding:2px 8px;border-radius:99px;">🚤 Speedboat Transfer</span>
+          </div>
+        </div>
+        <div class="mb-3" style="border-left:4px solid var(--blu);padding-left:14px;">
+          <div style="font-weight:700;color:var(--blu);margin-bottom:6px;">Day 2 — 26 Mar 2026: Water Sports Day</div>
+          <div style="font-size:.8rem;color:#4a5568;margin-bottom:8px;">Breakfast at resort. Full-day water sports package: snorkeling, jet-ski, parasailing, banana boat. Dolphin watching at 17:00. Candlelight beach dinner arranged (special honeymoon setup).</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="background:#e8f8ee;color:var(--grn);font-size:.68rem;padding:2px 8px;border-radius:99px;">🏨 Hulhumale Premium Resort</span>
+            <span style="background:#fdf0e8;color:var(--ora);font-size:.68rem;padding:2px 8px;border-radius:99px;">🤿 Water Sports Package</span>
+            <span style="background:#f3e8fe;color:var(--pur);font-size:.68rem;padding:2px 8px;border-radius:99px;">💕 Honeymoon Dinner</span>
+          </div>
+        </div>
+        <div class="mb-3" style="border-left:4px solid var(--grn);padding-left:14px;">
+          <div style="font-weight:700;color:var(--grn);margin-bottom:6px;">Day 3 — 27 Mar 2026: Island Hopping</div>
+          <div style="font-size:.8rem;color:#4a5568;margin-bottom:8px;">Full day island hopping tour: local fishing island, sandbank picnic lunch, coral reef snorkeling. Return by 18:00. Spa treatment included (60 min couple's massage).</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="background:#e8f8ee;color:var(--grn);font-size:.68rem;padding:2px 8px;border-radius:99px;">🏝 Island Hopping Tour</span>
+            <span style="background:#e8f4fd;color:var(--blu);font-size:.68rem;padding:2px 8px;border-radius:99px;">💆 Spa Package</span>
+          </div>
+        </div>
+        <div class="mb-3" style="border-left:4px solid var(--ora);padding-left:14px;">
+          <div style="font-weight:700;color:var(--ora);margin-bottom:6px;">Day 4-5 — 28-29 Mar 2026: Leisure Days</div>
+          <div style="font-size:.8rem;color:#4a5568;margin-bottom:8px;">Free days at resort. Optional activities: overwater bungalow upgrade (if available), glass-bottom kayaking, local market visit. Pool access & beach lounge.</div>
+        </div>
+        <div style="border-left:4px solid var(--red);padding-left:14px;">
+          <div style="font-weight:700;color:var(--red);margin-bottom:6px;">Day 6 — 30 Mar 2026: Departure</div>
+          <div style="font-size:.8rem;color:#4a5568;margin-bottom:8px;">Check-out by 11:00. Speedboat to Malé airport. Depart MLE 14:30, arrive BLR 17:15. Tour concludes.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="background:#fef0ee;color:var(--red);font-size:.68rem;padding:2px 8px;border-radius:99px;">✈ Return Flight 6E-5678</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3 pt-3" style="border-top:1px solid #e2e8f0;">
+        <button class="btn-sm-ico"><i class="bi bi-plus-circle me-1"></i>Add Day</button>
+        <button class="btn-sm-ico" style="color:var(--grn);border-color:var(--grn);"><i class="bi bi-whatsapp me-1"></i>Send to Client</button>
+        <button class="btn-sm-ico ms-auto"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF (v1.1)</button>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-itinerary -->
+
+<!-- ─────────────────── PAGE 7: VISA TRACKER ─────────────────── -->
+<div class="page-section" id="pg-visa">
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pri);">14</div><div class="lbl">Active Applications</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--red);">2</div><div class="lbl">Expiring in 5 Days ⚠</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--grn);">9</div><div class="lbl">Approved (Mar)</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--ora);">3</div><div class="lbl">In Process</div></div></div>
+  </div>
+
+  <div class="alert-strip">
+    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+    <strong>Action Required:</strong> Gupta Family (Thailand) visa expires 20 Mar · Singh Family (Dubai) docs submission due 17 Mar
+  </div>
+
+  <div class="s-card">
+    <div class="s-card-header">
+      <span class="s-card-title"><i class="bi bi-passport-fill me-2"></i>Visa Application Tracker</span>
+      <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#addVisaModal"><i class="bi bi-plus-lg me-1"></i>Add Application</button>
+    </div>
+    <div class="s-card-body p-0" style="overflow-x:auto;">
+      <table class="erp-table">
+        <thead><tr><th>Visa #</th><th>Client</th><th>Destination</th><th>Visa Type</th><th>Pax</th><th>Applied On</th><th>Expected By</th><th>Status</th><th>Docs</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr style="background:#fff0f0;">
+            <td>V-2026-014</td>
+            <td><strong>Gupta Family</strong><br><small class="text-muted">BK-2026-062</small></td>
+            <td>🇹🇭 Thailand</td><td>Tourist 30D</td><td>5</td>
+            <td>01 Mar</td>
+            <td style="color:var(--red);font-weight:700;">20 Mar ⚠</td>
+            <td><span class="badge-conf">Approved ✓</span></td>
+            <td><span class="badge-done">Complete</span></td>
+            <td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td>
+          </tr>
+          <tr style="background:#fff8e6;">
+            <td>V-2026-013</td>
+            <td><strong>Singh Family</strong><br><small class="text-muted">BK-2026-066</small></td>
+            <td>🇦🇪 Dubai (UAE)</td><td>Tourist 30D</td><td>4</td>
+            <td>10 Mar</td>
+            <td style="color:var(--ora);font-weight:700;">17 Mar</td>
+            <td><span class="badge-prog">Submitted</span></td>
+            <td><span class="badge-done">Complete</span></td>
+            <td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td>
+          </tr>
+          <tr>
+            <td>V-2026-012</td>
+            <td><strong>Rao Family</strong><br><small class="text-muted">BK-2026-058</small></td>
+            <td>🇬🇧 UK</td><td>Tourist 6M</td><td>2</td>
+            <td>05 Mar</td><td>25 Mar</td>
+            <td><span class="badge-prog">In Process</span></td>
+            <td><span class="badge-pend">Biometric Pending</span></td>
+            <td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td>
+          </tr>
+          <tr>
+            <td>V-2026-011</td>
+            <td><strong>Mehta Group</strong><br><small class="text-muted">BK-2026-055</small></td>
+            <td>🇸🇬 Singapore</td><td>Tourist 30D</td><td>8</td>
+            <td>01 Mar</td><td>18 Mar</td>
+            <td><span class="badge-conf">Approved ✓</span></td>
+            <td><span class="badge-done">Complete</span></td>
+            <td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td>
+          </tr>
+          <tr>
+            <td>V-2026-010</td>
+            <td><strong>Kumar Couple</strong><br><small class="text-muted">L-136</small></td>
+            <td>🇲🇻 Maldives</td><td>On Arrival</td><td>2</td>
+            <td>—</td><td>On Arrival</td>
+            <td><span class="badge-conf">Not Required</span></td>
+            <td><span class="badge-done">N/A</span></td>
+            <td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <div class="s-card mt-3">
+    <div class="s-card-header"><span class="s-card-title"><i class="bi bi-card-checklist me-2"></i>Standard Document Checklist — UAE Tourist Visa</span></div>
+    <div class="s-card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-check-circle-fill text-success"></i> Passport (valid 6+ months)</div>
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-check-circle-fill text-success"></i> Passport-size photo (white bg)</div>
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-check-circle-fill text-success"></i> Confirmed flight tickets</div>
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-check-circle-fill text-success"></i> Hotel booking confirmation</div>
+        </div>
+        <div class="col-md-4">
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-check-circle-fill text-success"></i> Bank statement (3 months)</div>
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-circle text-muted"></i> Cover letter from SST</div>
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-circle text-muted"></i> Travel insurance</div>
+        </div>
+        <div class="col-md-4">
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-circle text-muted"></i> NOC (if employed)</div>
+          <div style="font-size:.78rem;padding:6px 0;border-bottom:1px solid #f0f4f8;display:flex;gap:8px;align-items:center;"><i class="bi bi-circle text-muted"></i> Marriage certificate (for couples)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-visa -->
+
+<!-- ─────────────────── PAGE 8: FINANCE ─────────────────── -->
+<div class="page-section" id="pg-finance">
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--grn);">₹38.4L</div><div class="lbl">Revenue (MTD)</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--red);">₹6.2L</div><div class="lbl">Pending Collections</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--ora);">₹18.6L</div><div class="lbl">Vendor Payables</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pri);">₹19.8L</div><div class="lbl">Net Profit (MTD)</div></div></div>
+  </div>
+
+  <!-- Revenue / Expense Chart -->
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-graph-up-arrow me-2"></i>Revenue vs Cost vs Profit (FY 2025-26)</span></div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartFinance"></canvas></div></div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-pie-chart me-2"></i>Cost Breakdown (Mar)</span></div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartCost"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Table -->
+  <div class="s-card mb-3">
+    <div class="s-card-header">
+      <span class="s-card-title"><i class="bi bi-receipt me-2"></i>Invoices — March 2026</span>
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm" style="width:120px;font-size:.75rem;"><option>All Status</option><option>Paid</option><option>Unpaid</option><option>Partial</option></select>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#addInvoiceModal"><i class="bi bi-plus-lg me-1"></i>New Invoice</button>
+      </div>
+    </div>
+    <div class="s-card-body p-0" style="overflow-x:auto;">
+      <table class="erp-table">
+        <thead><tr><th>Invoice #</th><th>Client</th><th>Booking</th><th>Invoice Date</th><th>Due Date</th><th>Amount</th><th>Paid</th><th>Balance</th><th>GST</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>INV-2026-067</td><td>Goa Group Tour</td><td>BK-2026-067</td><td>10 Mar</td><td>15 Mar</td><td>₹2,34,000</td><td>₹2,34,000</td><td>₹0</td><td>₹42,120</td><td><span class="badge-paid">Paid</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button> <button class="btn-sm-ico"><i class="bi bi-download"></i></button></td></tr>
+          <tr><td>INV-2026-066</td><td>Singh Family</td><td>BK-2026-066</td><td>11 Mar</td><td>16 Mar</td><td>₹1,20,000</td><td>₹1,20,000</td><td>₹0</td><td>₹21,600</td><td><span class="badge-paid">Paid</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button> <button class="btn-sm-ico"><i class="bi bi-download"></i></button></td></tr>
+          <tr><td>INV-2026-065</td><td>Rajesh Family</td><td>BK-2026-065</td><td>12 Mar</td><td>17 Mar</td><td>₹84,000</td><td>₹84,000</td><td>₹0</td><td>₹15,120</td><td><span class="badge-paid">Paid</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button> <button class="btn-sm-ico"><i class="bi bi-download"></i></button></td></tr>
+          <tr><td>INV-2026-064</td><td>Verma Family</td><td>BK-2026-064</td><td>08 Mar</td><td>15 Mar</td><td>₹1,05,000</td><td>₹60,000</td><td style="color:var(--red);font-weight:700;">₹45,000</td><td>₹18,900</td><td><span class="badge-partial">Partial</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+          <tr><td>INV-2026-063</td><td>Sharma Couple</td><td>BK-2026-063</td><td>05 Mar</td><td>12 Mar</td><td>₹72,000</td><td>₹25,000</td><td style="color:var(--red);font-weight:700;">₹47,000 ⚠</td><td>₹12,960</td><td><span class="badge-unpaid">Overdue</span></td><td><button class="btn-sm-ico"><i class="bi bi-eye"></i></button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GST Summary -->
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-percent me-2"></i>GST Summary — March 2026</span></div>
+        <div class="s-card-body">
+          <table class="erp-table">
+            <thead><tr><th>Category</th><th>Taxable Value</th><th>GST Rate</th><th>GST Amount</th></tr></thead>
+            <tbody>
+              <tr><td>Domestic Tour Packages</td><td>₹22,00,000</td><td>5%</td><td style="color:var(--grn);font-weight:700;">₹1,10,000</td></tr>
+              <tr><td>International Tours</td><td>₹16,40,000</td><td>18%</td><td style="color:var(--grn);font-weight:700;">₹2,95,200</td></tr>
+              <tr style="font-weight:700;background:#f7fafc;"><td>Total GST Collected</td><td>₹38,40,000</td><td>—</td><td style="color:var(--pri);">₹4,05,200</td></tr>
+              <tr><td>ITC (Input Tax Credit)</td><td>—</td><td>—</td><td style="color:var(--red);">(₹1,24,000)</td></tr>
+              <tr style="font-weight:700;background:#e8f8ee;"><td>Net GST Payable</td><td>—</td><td>—</td><td style="color:var(--grn);">₹2,81,200</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-bank me-2"></i>Payment Ledger (Recent)</span></div>
+        <div class="s-card-body p-0">
+          <table class="erp-table">
+            <thead><tr><th>Date</th><th>Client</th><th>Amount</th><th>Mode</th><th>Ref</th></tr></thead>
+            <tbody>
+              <tr><td>15 Mar</td><td>Rajesh Family</td><td style="color:var(--grn);">+₹84,000</td><td>NEFT</td><td>INV-065</td></tr>
+              <tr><td>14 Mar</td><td>Singh Family</td><td style="color:var(--grn);">+₹60,000</td><td>UPI</td><td>INV-066</td></tr>
+              <tr><td>14 Mar</td><td>Verma Family</td><td style="color:var(--grn);">+₹45,000</td><td>Cheque</td><td>INV-064</td></tr>
+              <tr><td>12 Mar</td><td>Sea Face Hotels</td><td style="color:var(--red);">-₹72,000</td><td>RTGS</td><td>Vendor Pay</td></tr>
+              <tr><td>11 Mar</td><td>Speedy Cabs</td><td style="color:var(--red);">-₹18,500</td><td>UPI</td><td>Vendor Pay</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-finance -->
+
+<!-- ─────────────────── PAGE 9: HR & PAYROLL ─────────────────── -->
+<div class="page-section" id="pg-hr">
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pri);">13</div><div class="lbl">Total Staff</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--grn);">11</div><div class="lbl">Present Today</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--ora);">2</div><div class="lbl">On Leave</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-mini"><div class="val" style="color:var(--red);">3</div><div class="lbl">Pending Leave Requests</div></div></div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div class="d-flex gap-2 mb-3">
+    <button class="btn-pri" onclick="hrTab('staff',this)" id="hrBtn-staff">Staff Directory</button>
+    <button class="btn-sm-ico" onclick="hrTab('attendance',this)" id="hrBtn-attendance">Attendance</button>
+    <button class="btn-sm-ico" onclick="hrTab('leave',this)" id="hrBtn-leave">Leave Requests</button>
+    <button class="btn-sm-ico" onclick="hrTab('payroll',this)" id="hrBtn-payroll">Payroll</button>
+  </div>
+
+  <!-- Staff Directory -->
+  <div id="hr-staff">
+    <div class="s-card">
+      <div class="s-card-header">
+        <span class="s-card-title"><i class="bi bi-people-fill me-2"></i>Staff Directory</span>
+        <button class="btn-pri"><i class="bi bi-plus-lg me-1"></i>Add Staff</button>
+      </div>
+      <div class="s-card-body p-0" style="overflow-x:auto;">
+        <table class="erp-table">
+          <thead><tr><th>#</th><th>Name</th><th>Designation</th><th>Dept</th><th>Phone</th><th>Email</th><th>Date of Join</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td>EMP-001</td><td><strong>Gajendra</strong></td><td>Director / CEO</td><td>Management</td><td>+91 98xxx xxxxx</td><td>gajendra@ssttours.com</td><td>Jan 2020</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-002</td><td><strong>Kiran</strong></td><td>HOD — Operations</td><td>Operations</td><td>+91 97xxx xxxxx</td><td>kiran@ssttours.com</td><td>Mar 2020</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-003</td><td><strong>Divya</strong></td><td>HOD — Sales</td><td>Sales</td><td>+91 96xxx xxxxx</td><td>divya@ssttours.com</td><td>Jun 2020</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-004</td><td><strong>Suresh</strong></td><td>HOD — Finance</td><td>Finance</td><td>+91 95xxx xxxxx</td><td>suresh@ssttours.com</td><td>Aug 2020</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-005</td><td><strong>Meena</strong></td><td>HR Manager</td><td>HR</td><td>+91 94xxx xxxxx</td><td>meena@ssttours.com</td><td>Sep 2021</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-006</td><td><strong>Arjun Kumar</strong></td><td>Sales Executive</td><td>Sales</td><td>+91 93xxx xxxxx</td><td>arjun@ssttours.com</td><td>Jan 2022</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-007</td><td><strong>Neha Singh</strong></td><td>Sales Executive</td><td>Sales</td><td>+91 92xxx xxxxx</td><td>neha@ssttours.com</td><td>Mar 2022</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-008</td><td><strong>Mithun</strong></td><td>Operations Exec</td><td>Operations</td><td>+91 91xxx xxxxx</td><td>mithun@ssttours.com</td><td>Jun 2022</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-009</td><td><strong>Shreya</strong></td><td>Operations Exec</td><td>Operations</td><td>+91 90xxx xxxxx</td><td>shreya@ssttours.com</td><td>Aug 2022</td><td><span class="badge-leave">On Leave</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-010</td><td><strong>Rahul</strong></td><td>Operations Exec</td><td>Operations</td><td>+91 89xxx xxxxx</td><td>rahul@ssttours.com</td><td>Oct 2022</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-011</td><td><strong>Pooja</strong></td><td>Operations Exec</td><td>Operations</td><td>+91 88xxx xxxxx</td><td>pooja@ssttours.com</td><td>Jan 2023</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td>EMP-012</td><td><strong>Ravi</strong></td><td>IT Support</td><td>IT</td><td>+91 87xxx xxxxx</td><td>ravi@ssttours.com</td><td>Mar 2023</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance (hidden by default) -->
+  <div id="hr-attendance" style="display:none;">
+    <div class="s-card">
+      <div class="s-card-header">
+        <span class="s-card-title"><i class="bi bi-calendar3 me-2"></i>Attendance — 16 March 2026 (Today)</span>
+        <button class="btn-pri"><i class="bi bi-download me-1"></i>Export Month</button>
+      </div>
+      <div class="s-card-body p-0">
+        <table class="erp-table">
+          <thead><tr><th>Staff</th><th>16 Mar</th><th>15 Mar</th><th>14 Mar</th><th>13 Mar</th><th>12 Mar</th><th>Days Present (Mar)</th><th>Late Count</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Kiran</strong></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td>12/12</td><td>0</td></tr>
+            <tr><td><strong>Divya</strong></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-absent">A</span></td><td><span class="badge-present">P</span></td><td>11/12</td><td>1</td></tr>
+            <tr><td><strong>Arjun</strong></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td>12/12</td><td>0</td></tr>
+            <tr><td><strong>Neha</strong></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-leave">L</span></td><td><span class="badge-leave">L</span></td><td><span class="badge-present">P</span></td><td>10/12</td><td>0</td></tr>
+            <tr><td><strong>Shreya</strong></td><td><span class="badge-leave">L</span></td><td><span class="badge-leave">L</span></td><td><span class="badge-leave">L</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td>9/12</td><td>0</td></tr>
+            <tr><td><strong>Mithun</strong></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-present">P</span></td><td><span class="badge-absent">A</span></td><td>11/12</td><td>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leave Requests (hidden by default) -->
+  <div id="hr-leave" style="display:none;">
+    <div class="s-card">
+      <div class="s-card-header">
+        <span class="s-card-title"><i class="bi bi-calendar-x me-2"></i>Leave Requests</span>
+        <button class="btn-pri"><i class="bi bi-plus-lg me-1"></i>Apply Leave</button>
+      </div>
+      <div class="s-card-body p-0">
+        <table class="erp-table">
+          <thead><tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Applied On</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Shreya</strong></td><td>Sick Leave</td><td>14 Mar</td><td>17 Mar</td><td>4</td><td>Fever / Medical</td><td>13 Mar</td><td><span class="badge-approved">Approved</span></td><td>—</td></tr>
+            <tr><td><strong>Neha</strong></td><td>Casual Leave</td><td>14 Mar</td><td>15 Mar</td><td>2</td><td>Personal work</td><td>13 Mar</td><td><span class="badge-approved">Approved</span></td><td>—</td></tr>
+            <tr><td><strong>Rahul</strong></td><td>Earned Leave</td><td>22 Mar</td><td>24 Mar</td><td>3</td><td>Family function</td><td>15 Mar</td><td><span class="badge-review">Pending</span></td><td><button class="btn-sm-ico" style="color:var(--grn);">✓</button> <button class="btn-sm-ico" style="color:var(--red);">✗</button></td></tr>
+            <tr><td><strong>Arjun</strong></td><td>Casual Leave</td><td>28 Mar</td><td>28 Mar</td><td>1</td><td>Medical appointment</td><td>15 Mar</td><td><span class="badge-review">Pending</span></td><td><button class="btn-sm-ico" style="color:var(--grn);">✓</button> <button class="btn-sm-ico" style="color:var(--red);">✗</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payroll (hidden by default) -->
+  <div id="hr-payroll" style="display:none;">
+    <div class="row g-3 mb-3">
+      <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pri);">₹8.4L</div><div class="lbl">Total Payroll (Feb)</div></div></div>
+      <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--grn);">₹8.4L</div><div class="lbl">Disbursed</div></div></div>
+      <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--ora);">₹84,000</div><div class="lbl">TDS Deducted</div></div></div>
+      <div class="col-md-3"><div class="stat-mini"><div class="val" style="color:var(--pur);">₹1,26,000</div><div class="lbl">PF / ESI</div></div></div>
+    </div>
+    <div class="s-card">
+      <div class="s-card-header">
+        <span class="s-card-title"><i class="bi bi-cash-stack me-2"></i>Payroll — February 2026</span>
+        <div class="d-flex gap-2">
+          <select class="form-select form-select-sm" style="width:130px;font-size:.75rem;"><option>Feb 2026</option><option>Jan 2026</option><option>Dec 2025</option></select>
+          <button class="btn-pri"><i class="bi bi-download me-1"></i>Export Payslips</button>
+        </div>
+      </div>
+      <div class="s-card-body p-0" style="overflow-x:auto;">
+        <table class="erp-table">
+          <thead><tr><th>Staff</th><th>Designation</th><th>Basic</th><th>HRA</th><th>Allowances</th><th>Gross</th><th>PF</th><th>TDS</th><th>Net Pay</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Kiran</strong></td><td>HOD-Ops</td><td>₹55,000</td><td>₹22,000</td><td>₹8,000</td><td>₹85,000</td><td>₹6,600</td><td>₹8,500</td><td style="color:var(--grn);font-weight:700;">₹69,900</td><td><span class="badge-paid">Paid</span></td></tr>
+            <tr><td><strong>Divya</strong></td><td>HOD-Sales</td><td>₹60,000</td><td>₹24,000</td><td>₹10,000</td><td>₹94,000</td><td>₹7,200</td><td>₹9,400</td><td style="color:var(--grn);font-weight:700;">₹77,400</td><td><span class="badge-paid">Paid</span></td></tr>
+            <tr><td><strong>Arjun</strong></td><td>Sales Exec</td><td>₹35,000</td><td>₹14,000</td><td>₹6,000</td><td>₹55,000</td><td>₹4,200</td><td>₹5,500</td><td style="color:var(--grn);font-weight:700;">₹45,300</td><td><span class="badge-paid">Paid</span></td></tr>
+            <tr><td><strong>Neha</strong></td><td>Sales Exec</td><td>₹32,000</td><td>₹12,800</td><td>₹5,000</td><td>₹49,800</td><td>₹3,840</td><td>₹4,980</td><td style="color:var(--grn);font-weight:700;">₹40,980</td><td><span class="badge-paid">Paid</span></td></tr>
+            <tr><td><strong>Mithun</strong></td><td>Ops Exec</td><td>₹28,000</td><td>₹11,200</td><td>₹4,500</td><td>₹43,700</td><td>₹3,360</td><td>₹4,370</td><td style="color:var(--grn);font-weight:700;">₹35,970</td><td><span class="badge-paid">Paid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-hr -->
+
+<!-- ─────────────────── PAGE 10: REPORTS ─────────────────── -->
+<div class="page-section" id="pg-reports">
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-bar-chart-steps me-2"></i>Revenue by Sales Person (Mar 2026)</span></div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartSalesPerson"></canvas></div></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-bar-chart me-2"></i>Bookings by Tour Type (Mar 2026)</span></div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartTourType"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-geo-alt-fill me-2"></i>Revenue by Destination (Mar 2026)</span></div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartRevDest"></canvas></div></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-funnel-fill me-2"></i>Lead Source Trend (Last 6 Months)</span></div>
+        <div class="s-card-body"><div class="chart-box"><canvas id="chartLeadTrend"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick export panel -->
+  <div class="s-card">
+    <div class="s-card-header"><span class="s-card-title"><i class="bi bi-download me-2"></i>Quick Export Reports</span></div>
+    <div class="s-card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:center;cursor:pointer;" onmouseenter="this.style.borderColor='var(--pri)'" onmouseleave="this.style.borderColor='#e2e8f0'">
+            <i class="bi bi-file-earmark-bar-graph" style="font-size:2rem;color:var(--pri);"></i>
+            <div style="font-weight:700;margin-top:8px;font-size:.85rem;">Revenue Report</div>
+            <div style="font-size:.7rem;color:#718096;">Monthly / Yearly P&L</div>
+            <button class="btn-pri mt-2" style="font-size:.72rem;padding:5px 12px;">Export CSV</button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:center;cursor:pointer;" onmouseenter="this.style.borderColor='var(--grn)'" onmouseleave="this.style.borderColor='#e2e8f0'">
+            <i class="bi bi-calendar-check" style="font-size:2rem;color:var(--grn);"></i>
+            <div style="font-weight:700;margin-top:8px;font-size:.85rem;">Bookings Report</div>
+            <div style="font-size:.7rem;color:#718096;">All bookings by period</div>
+            <button class="btn-pri mt-2" style="font-size:.72rem;padding:5px 12px;">Export CSV</button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:center;cursor:pointer;" onmouseenter="this.style.borderColor='var(--pur)'" onmouseleave="this.style.borderColor='#e2e8f0'">
+            <i class="bi bi-people" style="font-size:2rem;color:var(--pur);"></i>
+            <div style="font-weight:700;margin-top:8px;font-size:.85rem;">Lead Pipeline</div>
+            <div style="font-size:.7rem;color:#718096;">CRM & conversion data</div>
+            <button class="btn-pri mt-2" style="font-size:.72rem;padding:5px 12px;">Export CSV</button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:center;cursor:pointer;" onmouseenter="this.style.borderColor='var(--ora)'" onmouseleave="this.style.borderColor='#e2e8f0'">
+            <i class="bi bi-percent" style="font-size:2rem;color:var(--ora);"></i>
+            <div style="font-weight:700;margin-top:8px;font-size:.85rem;">GST Report</div>
+            <div style="font-size:.7rem;color:#718096;">For Tally / Filing</div>
+            <button class="btn-pri mt-2" style="font-size:.72rem;padding:5px 12px;">Export CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-reports -->
+
+<!-- ─────────────────── PAGE 11: SETTINGS ─────────────────── -->
+<div class="page-section" id="pg-settings">
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="s-card mb-3">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-building me-2"></i>Company Settings</span></div>
+        <div class="s-card-body erp-form">
+          <div class="mb-2"><label class="form-label">Company Name</label><input class="form-control" value="SST Tours & Travels" type="text"></div>
+          <div class="mb-2"><label class="form-label">GST Number</label><input class="form-control" value="29AAAAA0000A1Z5" type="text"></div>
+          <div class="mb-2"><label class="form-label">Phone</label><input class="form-control" value="+91 80000 00000" type="text"></div>
+          <div class="mb-2"><label class="form-label">Email</label><input class="form-control" value="info@ssttours.com" type="text"></div>
+          <div class="mb-2"><label class="form-label">Address</label><textarea class="form-control" rows="2">Bangalore, Karnataka</textarea></div>
+          <button class="btn-pri mt-1 w-100">Save Changes</button>
+        </div>
+      </div>
+      <div class="s-card">
+        <div class="s-card-header"><span class="s-card-title"><i class="bi bi-palette me-2"></i>Theme</span></div>
+        <div class="s-card-body">
+          <div class="d-flex gap-2 flex-wrap">
+            <div style="width:32px;height:32px;border-radius:50%;background:#0D3B5E;cursor:pointer;border:3px solid #0D3B5E;" title="Navy (Default)"></div>
+            <div style="width:32px;height:32px;border-radius:50%;background:#1a5276;cursor:pointer;border:3px solid #e2e8f0;" title="Ocean Blue"></div>
+            <div style="width:32px;height:32px;border-radius:50%;background:#1e8449;cursor:pointer;border:3px solid #e2e8f0;" title="Forest Green"></div>
+            <div style="width:32px;height:32px;border-radius:50%;background:#6c3483;cursor:pointer;border:3px solid #e2e8f0;" title="Purple"></div>
+            <div style="width:32px;height:32px;border-radius:50%;background:#922b21;cursor:pointer;border:3px solid #e2e8f0;" title="Red"></div>
+          </div>
+          <small class="text-muted d-block mt-2">Theme customization in v1.1</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="s-card mb-3">
+        <div class="s-card-header">
+          <span class="s-card-title"><i class="bi bi-person-gear me-2"></i>User Management</span>
+          <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="bi bi-plus-lg me-1"></i>Add User</button>
+        </div>
+        <div class="s-card-body p-0" style="overflow-x:auto;">
+          <table class="erp-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Dept</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Gajendra</strong></td><td>gajendra@ssttours.com</td><td><span style="background:#e8f0fe;color:var(--pri);font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;">Admin</span></td><td>Management</td><td>Today 09:30</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+              <tr><td><strong>Kiran</strong></td><td>kiran@ssttours.com</td><td><span style="background:#e8f8ee;color:var(--grn);font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;">Manager</span></td><td>Operations</td><td>Today 09:15</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+              <tr><td><strong>Divya</strong></td><td>divya@ssttours.com</td><td><span style="background:#e8f8ee;color:var(--grn);font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;">Manager</span></td><td>Sales</td><td>Today 08:55</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+              <tr><td><strong>Arjun Kumar</strong></td><td>arjun@ssttours.com</td><td><span style="background:#fdf0e8;color:var(--ora);font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;">Staff</span></td><td>Sales</td><td>Today 09:05</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+              <tr><td><strong>Suresh</strong></td><td>suresh@ssttours.com</td><td><span style="background:#e8f8ee;color:var(--grn);font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600;">Manager</span></td><td>Finance</td><td>15 Mar</td><td><span class="badge-present">Active</span></td><td><button class="btn-sm-ico"><i class="bi bi-pencil"></i></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="s-card">
+            <div class="s-card-header"><span class="s-card-title"><i class="bi bi-shield-check me-2"></i>Roles & Permissions</span></div>
+            <div class="s-card-body">
+              <table class="erp-table" style="font-size:.72rem;">
+                <thead><tr><th>Module</th><th>Admin</th><th>Manager</th><th>Staff</th></tr></thead>
+                <tbody>
+                  <tr><td>CRM / Leads</td><td>✅ Full</td><td>✅ Full</td><td>✅ Full</td></tr>
+                  <tr><td>Bookings</td><td>✅ Full</td><td>✅ Full</td><td>✅ Full</td></tr>
+                  <tr><td>Finance</td><td>✅ Full</td><td>👁 View</td><td>❌ No</td></tr>
+                  <tr><td>HR / Payroll</td><td>✅ Full</td><td>👁 View</td><td>👁 Own</td></tr>
+                  <tr><td>Settings</td><td>✅ Full</td><td>❌ No</td><td>❌ No</td></tr>
+                  <tr><td>Reports</td><td>✅ Full</td><td>✅ Full</td><td>👁 Limited</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="s-card">
+            <div class="s-card-header"><span class="s-card-title"><i class="bi bi-database me-2"></i>Data & Backup</span></div>
+            <div class="s-card-body erp-form">
+              <div class="mb-2" style="font-size:.78rem;">
+                <strong>Database:</strong> sst_erp.db<br>
+                <span class="text-muted">Last backup: 15 Mar 2026, 11:00 PM</span>
+              </div>
+              <button class="btn-pri w-100 mb-2" style="font-size:.75rem;"><i class="bi bi-cloud-upload me-1"></i>Backup to Google Drive</button>
+              <button class="btn-sm-ico w-100 mb-2" style="font-size:.75rem;"><i class="bi bi-download me-1"></i>Download DB File</button>
+              <div class="alert-strip" style="font-size:.7rem;">⚠ Backup weekly to prevent data loss</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end pg-settings -->
+
+<!-- ══════════════════════════════ MODALS ══════════════════════════════ -->
+
+<!-- Add Lead Modal -->
+<div class="modal fade" id="addLeadModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add New Lead</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body erp-form">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Client Name</label><input class="form-control" placeholder="Full name"></div>
+          <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" placeholder="+91 XXXXX XXXXX"></div>
+          <div class="col-md-6"><label class="form-label">Destination</label><input class="form-control" placeholder="e.g. Goa 4N5D"></div>
+          <div class="col-md-3"><label class="form-label">No. of Pax</label><input class="form-control" type="number" placeholder="4"></div>
+          <div class="col-md-3"><label class="form-label">Budget (₹)</label><input class="form-control" type="number" placeholder="80000"></div>
+          <div class="col-md-4"><label class="form-label">Lead Source</label>
+            <select class="form-select"><option>WhatsApp</option><option>Google</option><option>Instagram</option><option>Facebook</option><option>Referral</option><option>Website</option><option>Walk-in</option></select>
+          </div>
+          <div class="col-md-4"><label class="form-label">Assigned To</label>
+            <select class="form-select"><option>Divya</option><option>Arjun</option><option>Neha</option></select>
+          </div>
+          <div class="col-md-4"><label class="form-label">Temperature</label>
+            <select class="form-select"><option>Hot</option><option>Warm</option><option>Cold</option></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Follow-Up Date</label><input class="form-control" type="date"></div>
+          <div class="col-md-6"><label class="form-label">Travel Date (Approx)</label><input class="form-control" type="date"></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea class="form-control" rows="2" placeholder="Any special requirements..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-sm-ico" data-bs-dismiss="modal">Cancel</button> <button class="btn-pri">Save Lead</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Booking Modal -->
+<div class="modal fade" id="addBookingModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i>New Booking</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body erp-form">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Client Name</label><input class="form-control" placeholder="Full name"></div>
+          <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" placeholder="+91 XXXXX XXXXX"></div>
+          <div class="col-md-6"><label class="form-label">Destination / Tour</label><input class="form-control" placeholder="e.g. Rajasthan 6N7D"></div>
+          <div class="col-md-3"><label class="form-label">Tour Type</label>
+            <select class="form-select"><option>FIT</option><option>Group</option><option>Corporate</option><option>Honeymoon</option></select>
+          </div>
+          <div class="col-md-3"><label class="form-label">No. of Pax</label><input class="form-control" type="number" placeholder="4"></div>
+          <div class="col-md-4"><label class="form-label">Departure Date</label><input class="form-control" type="date"></div>
+          <div class="col-md-4"><label class="form-label">Return Date</label><input class="form-control" type="date"></div>
+          <div class="col-md-4"><label class="form-label">Sales Person</label>
+            <select class="form-select"><option>Divya</option><option>Arjun</option><option>Neha</option></select>
+          </div>
+          <div class="col-md-4"><label class="form-label">Package Amount (₹)</label><input class="form-control" type="number" placeholder="84000"></div>
+          <div class="col-md-4"><label class="form-label">Advance Received (₹)</label><input class="form-control" type="number" placeholder="25000"></div>
+          <div class="col-md-4"><label class="form-label">Payment Mode</label>
+            <select class="form-select"><option>UPI</option><option>NEFT</option><option>Cheque</option><option>Cash</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-sm-ico" data-bs-dismiss="modal">Cancel</button> <button class="btn-pri">Create Booking</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-plus-square me-2"></i>Add Task</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body erp-form">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label">Task Description</label><input class="form-control" placeholder="What needs to be done?"></div>
+          <div class="col-md-6"><label class="form-label">Related To</label><input class="form-control" placeholder="e.g. BK-2026-067"></div>
+          <div class="col-md-6"><label class="form-label">Assign To</label>
+            <select class="form-select"><option>Kiran</option><option>Mithun</option><option>Shreya</option><option>Rahul</option><option>Pooja</option><option>Arjun</option><option>Neha</option></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Priority</label>
+            <select class="form-select"><option>High</option><option>Medium</option><option>Low</option></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Due Date</label><input class="form-control" type="date"></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea class="form-control" rows="2" placeholder="Additional details..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-sm-ico" data-bs-dismiss="modal">Cancel</button> <button class="btn-pri">Add Task</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Invoice Modal -->
+<div class="modal fade" id="addInvoiceModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Create Invoice</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body erp-form">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Client Name</label><input class="form-control" placeholder="Client name"></div>
+          <div class="col-md-6"><label class="form-label">Booking Reference</label><input class="form-control" placeholder="BK-2026-XXX"></div>
+          <div class="col-md-4"><label class="form-label">Invoice Date</label><input class="form-control" type="date"></div>
+          <div class="col-md-4"><label class="form-label">Due Date</label><input class="form-control" type="date"></div>
+          <div class="col-md-4"><label class="form-label">Package Amount (₹)</label><input class="form-control" type="number" placeholder="84000"></div>
+          <div class="col-md-4"><label class="form-label">GST Rate</label>
+            <select class="form-select"><option>5% (Domestic)</option><option>18% (International)</option><option>0% (Exempt)</option></select>
+          </div>
+          <div class="col-md-4"><label class="form-label">GST Amount (₹)</label><input class="form-control" placeholder="Auto calculated" readonly></div>
+          <div class="col-md-4"><label class="form-label">Total (₹)</label><input class="form-control" placeholder="Auto calculated" readonly></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-sm-ico" data-bs-dismiss="modal">Cancel</button> <button class="btn-pri">Generate Invoice</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Visa Modal -->
+<div class="modal fade" id="addVisaModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-passport me-2"></i>Add Visa Application</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body erp-form">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Client Name</label><input class="form-control" placeholder="Client name"></div>
+          <div class="col-md-6"><label class="form-label">Booking #</label><input class="form-control" placeholder="BK-2026-XXX"></div>
+          <div class="col-md-6"><label class="form-label">Destination Country</label><input class="form-control" placeholder="e.g. UAE, Thailand"></div>
+          <div class="col-md-6"><label class="form-label">Visa Type</label><input class="form-control" placeholder="e.g. Tourist 30D"></div>
+          <div class="col-md-4"><label class="form-label">No. of Pax</label><input class="form-control" type="number" placeholder="4"></div>
+          <div class="col-md-4"><label class="form-label">Applied On</label><input class="form-control" type="date"></div>
+          <div class="col-md-4"><label class="form-label">Expected By</label><input class="form-control" type="date"></div>
+          <div class="col-md-6"><label class="form-label">Handled By</label>
+            <select class="form-select"><option>Pooja</option><option>Kiran</option><option>Mithun</option></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Status</label>
+            <select class="form-select"><option>Docs Collecting</option><option>Submitted</option><option>In Process</option><option>Approved</option><option>Rejected</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-sm-ico" data-bs-dismiss="modal">Cancel</button> <button class="btn-pri">Save Application</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Add New User</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body erp-form">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Full Name</label><input class="form-control" placeholder="Staff name"></div>
+          <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" type="email" placeholder="name@ssttours.com"></div>
+          <div class="col-md-6"><label class="form-label">Role</label>
+            <select class="form-select"><option>admin</option><option>manager</option><option>staff</option></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Department</label>
+            <select class="form-select"><option>Sales</option><option>Operations</option><option>Finance</option><option>HR</option><option>IT</option><option>Management</option></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Password</label><input class="form-control" type="password" placeholder="Min 8 chars"></div>
+          <div class="col-md-6"><label class="form-label">Confirm Password</label><input class="form-control" type="password"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-sm-ico" data-bs-dismiss="modal">Cancel</button> <button class="btn-pri">Create User</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Quote Modal -->
+<div class="modal fade" id="addQuoteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-file-earmark-plus me-2"></i>New Quotation</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body erp-form">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Client</label><input class="form-control" placeholder="Client name"></div>
+          <div class="col-md-6"><label class="form-label">Destination</label><input class="form-control" placeholder="e.g. Goa 4N5D"></div>
+          <div class="col-md-4"><label class="form-label">No. of Pax</label><input class="form-control" type="number"></div>
+          <div class="col-md-4"><label class="form-label">Duration</label><input class="form-control" placeholder="4N5D"></div>
+          <div class="col-md-4"><label class="form-label">Package Price (₹)</label><input class="form-control" type="number"></div>
+          <div class="col-md-6"><label class="form-label">Prepared By</label>
+            <select class="form-select"><option>Divya</option><option>Arjun</option><option>Neha</option></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Valid Until</label><input class="form-control" type="date"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-sm-ico" data-bs-dismiss="modal">Cancel</button> <button class="btn-pri">Create Quote</button></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end #main -->
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ══════════════════════════ PAGE NAVIGATION ══════════════════════════
+const PAGE_TITLES = {
+  dashboard:'CEO Dashboard', crm:'CRM / Leads', quotation:'Quotations',
+  bookings:'Bookings', operations:'Operations', itinerary:'Itinerary Builder',
+  visa:'Visa Tracker', finance:'Finance', hr:'HR & Payroll',
+  reports:'Reports', settings:'Settings'
+};
+function showPage(name, el) {
+  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('pg-' + name);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = PAGE_TITLES[name] || name;
+  // Init charts if needed
+  if (name === 'dashboard' && !window._dashCharts) initDashCharts();
+  if (name === 'operations' && !window._opsChart) initOpsChart();
+  if (name === 'finance' && !window._finCharts) initFinCharts();
+  if (name === 'reports' && !window._repCharts) initRepCharts();
+}
+
+// ══════════════════════════ HR TAB SWITCHER ══════════════════════════
+function hrTab(tab, btn) {
+  ['staff','attendance','leave','payroll'].forEach(t => {
+    const el = document.getElementById('hr-' + t);
+    if (el) el.style.display = (t === tab) ? 'block' : 'none';
+    const b = document.getElementById('hrBtn-' + t);
+    if (b) { b.className = (t === tab) ? 'btn-pri' : 'btn-sm-ico'; }
+  });
+}
+function crmTab(tab, btn) { /* visual only for prototype */ }
+
+// ══════════════════════════ CHARTS ══════════════════════════
+const MONTHS = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+const PRI = '#0D3B5E', GRN = '#27ae60', RED = '#e74c3c', ORA = '#e67e22', BLU = '#2980b9', PUR = '#8e44ad';
+
+function initDashCharts() {
+  window._dashCharts = true;
+
+  // Revenue chart
+  const rc = document.getElementById('chartRevenue');
+  if (rc) new Chart(rc, {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Domestic (₹L)', data: [14,16,18,15,17,19,21,20,22,24,26,22], backgroundColor: PRI+'cc', borderRadius: 5 },
+        { label: 'International (₹L)', data: [8,9,10,8,12,14,15,13,16,18,14,16], backgroundColor: ORA+'cc', borderRadius: 5 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '₹'+v+'L' } } } }
+  });
+
+  // Lead source pie
+  const ls = document.getElementById('chartLeadSource');
+  if (ls) new Chart(ls, {
+    type: 'doughnut',
+    data: {
+      labels: ['WhatsApp', 'Instagram', 'Google', 'Referral', 'Website', 'Walk-in'],
+      datasets: [{ data: [32, 24, 18, 14, 8, 4], backgroundColor: [PRI, ORA, GRN, BLU, PUR, RED], borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
+  });
+
+  // Destinations chart
+  const dc = document.getElementById('chartDestinations');
+  if (dc) new Chart(dc, {
+    type: 'bar',
+    data: {
+      labels: ['Goa', 'Rajasthan', 'Kerala', 'Maldives', 'Dubai', 'Bangkok', 'Manali', 'Andaman'],
+      datasets: [{ label: 'Bookings', data: [14, 10, 8, 7, 6, 5, 4, 3], backgroundColor: [PRI, ORA, GRN, BLU, PUR, RED, PRI+'99', ORA+'99'], borderRadius: 5 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+  });
+}
+
+function initOpsChart() {
+  window._opsChart = true;
+  const tc = document.getElementById('chartTasks');
+  if (tc) new Chart(tc, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'In Progress', 'Pending', 'Overdue'],
+      datasets: [{ data: [28, 12, 8, 4], backgroundColor: [GRN, BLU, ORA, RED], borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
+  });
+}
+
+function initFinCharts() {
+  window._finCharts = true;
+
+  const fc = document.getElementById('chartFinance');
+  if (fc) new Chart(fc, {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Revenue (₹L)', data: [22,25,28,23,29,33,36,33,38,42,40,38], borderColor: GRN, backgroundColor: GRN+'22', fill: true, tension: 0.4, pointRadius: 4 },
+        { label: 'Cost (₹L)', data: [13,15,17,14,18,20,22,20,23,26,24,19], borderColor: RED, backgroundColor: RED+'22', fill: true, tension: 0.4, pointRadius: 4 },
+        { label: 'Profit (₹L)', data: [9,10,11,9,11,13,14,13,15,16,16,19], borderColor: PRI, backgroundColor: PRI+'22', fill: false, tension: 0.4, pointRadius: 4 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '₹'+v+'L' } } } }
+  });
+
+  const cc = document.getElementById('chartCost');
+  if (cc) new Chart(cc, {
+    type: 'doughnut',
+    data: {
+      labels: ['Hotel', 'Transport', 'Flights', 'Visa/Misc', 'Staff Salaries', 'Marketing'],
+      datasets: [{ data: [32, 18, 22, 8, 12, 8], backgroundColor: [PRI, ORA, BLU, RED, GRN, PUR], borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
+  });
+}
+
+function initRepCharts() {
+  window._repCharts = true;
+
+  new Chart(document.getElementById('chartSalesPerson'), {
+    type: 'bar',
+    data: {
+      labels: ['Divya', 'Arjun', 'Neha'],
+      datasets: [
+        { label: 'Revenue (₹L)', data: [16.2, 12.4, 9.8], backgroundColor: [PRI, GRN, ORA], borderRadius: 6 },
+        { label: 'Target (₹L)', data: [15, 12, 12], backgroundColor: ['#e2e8f0','#e2e8f0','#e2e8f0'], borderRadius: 6 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '₹'+v+'L' } } } }
+  });
+
+  new Chart(document.getElementById('chartTourType'), {
+    type: 'pie',
+    data: {
+      labels: ['FIT', 'Group', 'Honeymoon', 'Corporate'],
+      datasets: [{ data: [38, 22, 15, 10], backgroundColor: [PRI, GRN, PUR, ORA], borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+  });
+
+  new Chart(document.getElementById('chartRevDest'), {
+    type: 'bar',
+    data: {
+      labels: ['Goa', 'Dubai', 'Rajasthan', 'Bangkok', 'Kerala', 'Maldives'],
+      datasets: [{ label: 'Revenue (₹L)', data: [8.2, 6.8, 5.4, 5.1, 4.8, 3.9], backgroundColor: [PRI, ORA, GRN, BLU, PUR, RED], borderRadius: 5 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '₹'+v+'L' } } } }
+  });
+
+  new Chart(document.getElementById('chartLeadTrend'), {
+    type: 'line',
+    data: {
+      labels: ['Oct','Nov','Dec','Jan','Feb','Mar'],
+      datasets: [
+        { label: 'WhatsApp', data: [28,30,32,29,31,32], borderColor: GRN, tension: 0.4, fill: false },
+        { label: 'Instagram', data: [18,20,22,21,23,24], borderColor: PUR, tension: 0.4, fill: false },
+        { label: 'Google', data: [12,14,15,16,17,18], borderColor: BLU, tension: 0.4, fill: false },
+        { label: 'Referral', data: [10,11,12,12,13,14], borderColor: ORA, tension: 0.4, fill: false }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+  });
+}
+
+// ══════════════════════════ INIT ══════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  initDashCharts();
+});
+</script>
+</body>
+</html>
